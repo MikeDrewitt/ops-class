@@ -142,7 +142,7 @@ struct lock *
 lock_create(const char *name)
 {
 	struct lock *lock;
-
+	
 	lock = kmalloc(sizeof(*lock));
 	if (lock == NULL) {
 		return NULL;
@@ -153,8 +153,18 @@ lock_create(const char *name)
 		kfree(lock);
 		return NULL;
 	}
+//added stuff below
+	lock->lock_wchan = wchan_create(lock->lk_name);
+	if(lock->lock_wchan == NULL){
+		kfree(lock->lk_name);
+		kfree(lock);
+		return NULL;
+	}
 
-	// add stuff here as needed
+	lock->lock_thread = curthread;
+	spinlock_init(&lock->lock_lock);
+	lock->lock_count = 1;
+// added stuff above
 
 	return lock;
 }
@@ -164,36 +174,80 @@ lock_destroy(struct lock *lock)
 {
 	KASSERT(lock != NULL);
 
-	// add stuff here as needed
+// added stuff below
+	spinlock_cleanup(&lock->lock_lock);
+	wchan_destroy(lock->lock_wchan);
 
+//added stuff above
 	kfree(lock->lk_name);
 	kfree(lock);
 }
-
+//this is basically P for semaphores
 void
 lock_acquire(struct lock *lock)
 {
+//added stuff below
+	KASSERT(lock != NULL);
+	KASSERT(curthread->t_in_interrupt == false);
+
+	spinlock_acquire(&lock->lock_lock);
+
+	while(lock->lock_count == 0){
+
+		wchan_sleep(lock->lock_wchan, &lock->lock_lock);
+
+	}
+
+	KASSERT(lock->lock_count > 0);
+
+	lock->lock_count--;
+	spinlock_release(&lock->lock_lock);
+//added stuff above
+
 	// Write this
 
-	(void)lock;  // suppress warning until code gets written
+	//(void)lock;  // suppress warning until code gets written
 }
-
+//basically V for semaphores
 void
 lock_release(struct lock *lock)
 {
+//added stuff below
+	KASSERT(lock != NULL);
+
+	spinlock_acquire(&lock->lock_lock);
+
+	lock->lock_count++;
+	KASSERT(lock->lock_count >0);
+	wchan_wakeone(lock->lock_wchan, &lock->lock_lock);
+
+	spinlock_release(&lock->lock_lock);
+//added stuff above
+
+
+
 	// Write this
 
-	(void)lock;  // suppress warning until code gets written
+	//(void)lock;  // suppress warning until code gets written
 }
 
 bool
 lock_do_i_hold(struct lock *lock)
 {
 	// Write this
+//added stuff below
+	if(lock->lock_count == 1){
+		return false;
+	}
 
-	(void)lock;  // suppress warning until code gets written
+	if(curthread == lock->lock_thread){
+		return true;
+	}
 
-	return true; // dummy until code gets written
+//added stuff above
+	//(void)lock;  // suppress warning until code gets written
+
+	return false; // dummy until code gets written
 }
 
 ////////////////////////////////////////////////////////////
