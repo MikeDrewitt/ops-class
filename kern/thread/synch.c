@@ -236,8 +236,12 @@ lock_do_i_hold(struct lock *lock)
 {
 	// Write this
 //added stuff below
-	if(lock->lock_count == 1){
-		return false;
+	if(lock == NULL){
+		return NULL;
+	}
+	if(lock->lock_thread == NULL){
+		kfree(lock);
+		return NULL;
 	}
 
 	if(curthread == lock->lock_thread){
