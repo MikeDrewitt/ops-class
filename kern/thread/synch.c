@@ -191,7 +191,6 @@ lock_acquire(struct lock *lock)
 	KASSERT(curthread->t_in_interrupt == false);
 
 	spinlock_acquire(&lock->lock_lock);
-
 	while(lock->lock_count == 0){
 
 		wchan_sleep(lock->lock_wchan, &lock->lock_lock);
@@ -218,14 +217,13 @@ lock_release(struct lock *lock)
 	spinlock_acquire(&lock->lock_lock);
 
 	lock->lock_count++;
-	KASSERT(lock->lock_count >0);
+
+	KASSERT(lock->lock_count > 0);
+	
 	wchan_wakeone(lock->lock_wchan, &lock->lock_lock);
 
 	spinlock_release(&lock->lock_lock);
 //added stuff above
-
-
-
 	// Write this
 
 	//(void)lock;  // suppress warning until code gets written
@@ -236,10 +234,16 @@ lock_do_i_hold(struct lock *lock)
 {
 	// Write this
 //added stuff below
+	
+	KASSERT(lock != NULL);
+	
+	/*
 	if(lock == NULL){
 		return NULL;
 	}
-	if(lock->lock_thread == NULL){
+	*/
+	
+	if(&lock->lock_thread == NULL){
 		kfree(lock);
 		return NULL;
 	}

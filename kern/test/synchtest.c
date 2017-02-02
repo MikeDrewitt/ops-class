@@ -247,7 +247,7 @@ locktest(int nargs, char **args)
 
 	int i, result;
 
-	kprintf_n("Starting lt1...\n");
+	kprintf_n("Starting lt1... YOOO....\n");
 	for (i=0; i<CREATELOOPS; i++) {
 		kprintf_t(".");
 		testlock = lock_create("testlock");
@@ -263,6 +263,8 @@ locktest(int nargs, char **args)
 			sem_destroy(donesem);
 		}
 	}
+
+
 	spinlock_init(&status_lock);
 	test_status = TEST161_SUCCESS;
 
