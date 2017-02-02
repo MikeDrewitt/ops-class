@@ -179,6 +179,7 @@ locktestthread(void *junk, unsigned long num)
 		testval1 = num;
 		testval2 = num*num;
 		testval3 = num%3;
+	
 
 		if (testval2 != testval1*testval1) {
 			goto fail;
@@ -211,6 +212,7 @@ locktestthread(void *junk, unsigned long num)
 		random_yielder(4);
 
 		if (!(lock_do_i_hold(testlock))) {
+			kprintf("working?");
 			goto fail;
 		}
 		random_yielder(4);

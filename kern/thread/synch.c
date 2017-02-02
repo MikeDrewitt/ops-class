@@ -229,6 +229,11 @@ lock_release(struct lock *lock)
 	//(void)lock;  // suppress warning until code gets written
 }
 
+
+/*
+ * Returns true if the lock is held by the thread,
+ * false if it is held by someone else, or not held at all.
+ */
 bool
 lock_do_i_hold(struct lock *lock)
 {
@@ -236,18 +241,12 @@ lock_do_i_hold(struct lock *lock)
 //added stuff below
 	
 	KASSERT(lock != NULL);
-	
 	/*
-	if(lock == NULL){
-		return NULL;
-	}
-	*/
-	
 	if(&lock->lock_thread == NULL){
 		kfree(lock);
 		return NULL;
 	}
-
+	*/
 	if(curthread == lock->lock_thread){
 		return true;
 	}
