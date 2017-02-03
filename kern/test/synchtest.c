@@ -281,9 +281,7 @@ locktest(int nargs, char **args)
 	for (i=0; i<NTHREADS; i++) {
 		kprintf_t(".");
 		P(donesem);
-	}
-	success(test_status, SECRET, "lt1");
-	
+	}	
 
 	lock_destroy(testlock);
 	sem_destroy(donesem);

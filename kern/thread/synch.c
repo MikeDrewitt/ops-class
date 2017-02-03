@@ -160,8 +160,8 @@ lock_create(const char *name)
 		kfree(lock);
 		return NULL;
 	}
-
-	//lock->lock_thread = curthread;
+	lock->hasBeenAcquired = false;
+	lock->lock_thread = curthread;
 	spinlock_init(&lock->lock_lock);
 	lock->lock_count = 1;
 // added stuff above
@@ -197,7 +197,7 @@ lock_acquire(struct lock *lock)
 	}
 
 	KASSERT(lock->lock_count > 0);
-
+	lock->hasBeenAcquired = true;
 	lock->lock_thread = curthread;
 	lock->lock_count--;
 	spinlock_release(&lock->lock_lock);
@@ -215,15 +215,23 @@ lock_release(struct lock *lock)
 	KASSERT(lock != NULL);
 
 	spinlock_acquire(&lock->lock_lock);
+	
+	KASSERT(lock_do_i_hold(lock));
+		
+	/*
+	if (lock->hasBeenAcquired) {
+		panic("been aquired");	
+	}
+	*/
 
 	lock->lock_count++;
-
 	KASSERT(lock->lock_count > 0);
 	
 	wchan_wakeone(lock->lock_wchan, &lock->lock_lock);
 
 	lock->lock_thread = NULL;
-
+	lock->hasBeenAcquired = false;
+	KASSERT(lock->lock_count == 2);	
 	spinlock_release(&lock->lock_lock);
 //added stuff above
 	// Write this
@@ -243,12 +251,7 @@ lock_do_i_hold(struct lock *lock)
 //added stuff below
 	
 	KASSERT(lock != NULL);
-	/*
-	if(&lock->lock_thread == NULL){
-		kfree(lock);
-		return NULL;
-	}
-	*/
+
 	if(curthread == lock->lock_thread){
 		return true;
 	}
