@@ -161,7 +161,7 @@ lock_create(const char *name)
 		return NULL;
 	}
 
-	lock->lock_thread = curthread;
+	//lock->lock_thread = curthread;
 	spinlock_init(&lock->lock_lock);
 	lock->lock_count = 1;
 // added stuff above
