@@ -182,37 +182,43 @@ locktestthread(void *junk, unsigned long num)
 	
 
 		if (testval2 != testval1*testval1) {
+			kprintf("1");
 			goto fail;
 		}
 		random_yielder(4);
 
 		if (testval2%3 != (testval3*testval3)%3) {
+			kprintf("2");
 			goto fail;
 		}
 		random_yielder(4);
 
 		if (testval3 != testval1%3) {
+			kprintf("3");
 			goto fail;
 		}
 		random_yielder(4);
 
 		if (testval1 != num) {
+			kprintf("4");
 			goto fail;
 		}
 		random_yielder(4);
 
 		if (testval2 != num*num) {
+			kprintf("5");
 			goto fail;
 		}
 		random_yielder(4);
 
 		if (testval3 != num%3) {
+			kprintf("6");
 			goto fail;
 		}
 		random_yielder(4);
 
 		if (!(lock_do_i_hold(testlock))) {
-			kprintf("working?");
+			kprintf("7");
 			goto fail;
 		}
 		random_yielder(4);
@@ -225,6 +231,7 @@ locktestthread(void *junk, unsigned long num)
 	for (i=0; i<NLOCKLOOPS; i++) {
 		kprintf_t(".");
 		if (lock_do_i_hold(testlock)) {
+			kprintf("8");
 			goto fail2;
 		}
 	}
@@ -283,6 +290,7 @@ locktest(int nargs, char **args)
 		kprintf_t(".");
 		P(donesem);
 	}
+	success(test_status, SECRET, "lt1");
 	
 
 	lock_destroy(testlock);

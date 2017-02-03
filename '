@@ -161,7 +161,7 @@ lock_create(const char *name)
 		return NULL;
 	}
 
-	lock->lock_thread = curthread;
+	//lock->lock_thread = curthread;
 	spinlock_init(&lock->lock_lock);
 	lock->lock_count = 1;
 // added stuff above
@@ -221,9 +221,9 @@ lock_release(struct lock *lock)
 	KASSERT(lock->lock_count > 0);
 	
 	wchan_wakeone(lock->lock_wchan, &lock->lock_lock);
-
-	lock->lock_thread = NULL;
-
+	
+	lock->lock_thread = curthread;
+	
 	spinlock_release(&lock->lock_lock);
 //added stuff above
 	// Write this
