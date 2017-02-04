@@ -386,11 +386,13 @@ cvtestthread(void *junk, unsigned long num)
 		/*
 		 * loop a little while to make sure we can measure the
 		 * time waiting on the cv.
-		 */
+		 */	
+		
 		for (j=0; j<3000; j++);
 
 		random_yielder(4);
 		cv_broadcast(testcv, testlock);
+		kprintf("hullo?");
 		random_yielder(4);
 		failif((testval1 != testval2));
 
