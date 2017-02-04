@@ -155,12 +155,12 @@ lock_create(const char *name)
 	}
 //added stuff below
 	lock->lock_wchan = wchan_create(lock->lk_name);
-	if(lock->lock_wchan == NULL){
+	if (lock->lock_wchan == NULL) {
 		kfree(lock->lk_name);
 		kfree(lock);
 		return NULL;
 	}
-	lock->lock_count = 1;
+	lock->lock_acquired = false;
 	spinlock_init(&lock->lock_lock);
 // added stuff above
 
@@ -173,7 +173,7 @@ lock_destroy(struct lock *lock)
 	KASSERT(lock != NULL);
 
 // added stuff below
-	KASSERT(lock->lock_thread == NULL);
+	KASSERT(!lock_do_i_hold(lock));
 	spinlock_cleanup(&lock->lock_lock);
 	wchan_destroy(lock->lock_wchan);
 
@@ -190,13 +190,13 @@ lock_acquire(struct lock *lock)
 	//KASSERT(curthread->t_in_interrupt == false);
 	
 	spinlock_acquire(&lock->lock_lock);
-	while(lock->lock_count == 0) {
+	while (lock->lock_acquired) {
 		wchan_sleep(lock->lock_wchan, &lock->lock_lock);
 	}
 
-	KASSERT(lock->lock_count > 0);
 	lock->lock_thread = curthread;
-	lock->lock_count--;
+	lock->lock_acquired = true;
+
 	spinlock_release(&lock->lock_lock);
 //added stuff above
 
@@ -215,8 +215,7 @@ lock_release(struct lock *lock)
 	
 	KASSERT(lock_do_i_hold(lock));
 
-	lock->lock_count++;
-	KASSERT(lock->lock_count > 0);
+	lock->lock_acquired = false;
 	
 	wchan_wakeone(lock->lock_wchan, &lock->lock_lock);
 

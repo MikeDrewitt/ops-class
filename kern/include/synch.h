@@ -78,7 +78,7 @@ struct lock {
         struct thread *lock_thread;
         struct wchan *lock_wchan;
         struct spinlock lock_lock;
-        volatile unsigned lock_count;
+        bool lock_acquired;
 //added stuff above        
         
         // (don't forget to mark things volatile as needed)
