@@ -285,8 +285,12 @@ cv_wait(struct cv *cv, struct lock *lock)
 		lock->lock_thread = NULL;
 		wchan_wakeone(lock->lock_wchan, &lock->lock_lock);
 	
-		wchan_sleep(cv->cv_wchan, &lock->lock_lock);
-			
+		//wchan_sleep(cv->cv_wchan, &lock->lock_lock);
+
+		while (lock->lock_thread != NULL) {
+			wchan_sleep(cv->cv_wchan, &lock->lock_lock);
+		}
+
 		lock->lock_thread = curthread;
 	}
 	
