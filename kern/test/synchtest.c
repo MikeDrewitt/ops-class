@@ -364,6 +364,7 @@ cvtestthread(void *junk, unsigned long num)
 			random_yielder(4);
 			gettime(&ts1);
 			cv_wait(testcv, testlock);
+			kprintf("hullo?");
 			gettime(&ts2);
 			random_yielder(4);
 
@@ -378,7 +379,7 @@ cvtestthread(void *junk, unsigned long num)
 				V(donesem);
 				thread_exit();
 			}
-
+	
 			testval2 = 0xFFFFFFFF;
 		}
 		testval2 = num;
@@ -392,7 +393,6 @@ cvtestthread(void *junk, unsigned long num)
 
 		random_yielder(4);
 		cv_broadcast(testcv, testlock);
-		kprintf("hullo?");
 		random_yielder(4);
 		failif((testval1 != testval2));
 
