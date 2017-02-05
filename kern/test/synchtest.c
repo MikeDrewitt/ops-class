@@ -364,7 +364,6 @@ cvtestthread(void *junk, unsigned long num)
 			random_yielder(4);
 			gettime(&ts1);
 			cv_wait(testcv, testlock);
-			kprintf("hullo?");
 			gettime(&ts2);
 			random_yielder(4);
 
