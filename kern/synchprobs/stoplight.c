@@ -73,8 +73,18 @@
  * Called by the driver during initialization.
  */
 
+
+struct intersection *inter;
+
 void
 stoplight_init() {
+	
+	inter = kmalloc(sizeof(struct intersection));
+
+	inter->top_left = lock_create("top_left");
+	inter->top_right = lock_create("top_right");
+	inter->bottom_left = lock_create("bottom_left");
+	inter->bottom_right = lock_create("bottom_right");
 	return;
 }
 
@@ -83,36 +93,109 @@ stoplight_init() {
  */
 
 void stoplight_cleanup() {
+	lock_destroy(inter->top_left);
+	lock_destroy(inter->top_right);
+	lock_destroy(inter->bottom_left);
+	lock_destroy(inter->bottom_right);
+
+	kfree(inter);
+	
 	return;
 }
 
 void
 turnright(uint32_t direction, uint32_t index)
 {
-	(void)direction;
 	(void)index;
-	/*
-	 * Implement this function.
-	 */
+
+	if (direction == 0) {
+		lock_acquire(inter->top_left);
+		lock_release(inter->top_left);
+	} 
+	else if (direction == 1) {
+		lock_acquire(inter->top_right);
+		lock_release(inter->top_right);
+	}
+	else if (direction == 2) {
+		lock_acquire(inter->bottom_right);
+		lock_release(inter->bottom_right);
+	}
+	else if (direction == 3) {
+		lock_acquire(inter->bottom_left);
+		lock_release(inter->bottom_left);
+	}	
+		
 	return;
 }
 void
 gostraight(uint32_t direction, uint32_t index)
 {
-	(void)direction;
 	(void)index;
-	/*
-	 * Implement this function.
-	 */
+
+	if (direction == 0) {
+		lock_acquire(inter->top_left);
+		lock_acquire(inter->bottom_left);
+		lock_release(inter->top_left);
+		lock_release(inter->bottom_left);
+	} 
+	else if (direction == 1) {
+		lock_acquire(inter->top_right);
+		lock_acquire(inter->top_left);
+		lock_release(inter->top_right);
+		lock_release(inter->top_left);
+	}
+	else if (direction == 2) {
+		lock_acquire(inter->bottom_right);
+		lock_acquire(inter->top_right);
+		lock_release(inter->bottom_right);
+		lock_release(inter->top_right);
+	}
+	else if (direction == 3) {
+		lock_acquire(inter->bottom_left);
+		lock_acquire(inter->bottom_right);
+		lock_release(inter->bottom_left);
+		lock_release(inter->bottom_right);
+	}	
+		
 	return;
 }
 void
 turnleft(uint32_t direction, uint32_t index)
 {
-	(void)direction;
 	(void)index;
-	/*
-	 * Implement this function.
-	 */
+
+	if (direction == 0) {
+		lock_acquire(inter->top_left);
+		lock_acquire(inter->bottom_left);
+		lock_release(inter->top_left);
+		lock_acquire(inter->bottom_right);
+		lock_release(inter->bottom_left);
+		lock_release(inter->bottom_right);
+	} 
+	else if (direction == 1) {
+		lock_acquire(inter->top_right);
+		lock_acquire(inter->top_left);
+		lock_release(inter->top_right);
+		lock_acquire(inter->bottom_left);
+		lock_release(inter->top_left);
+		lock_release(inter->bottom_left);
+	}
+	else if (direction == 2) {
+		lock_acquire(inter->bottom_right);
+		lock_acquire(inter->top_right);
+		lock_release(inter->bottom_right);
+		lock_acquire(inter->top_left);
+		lock_release(inter->top_right);
+		lock_release(inter->top_left);
+	}
+	else if (direction == 3) {
+		lock_acquire(inter->bottom_left);
+		lock_acquire(inter->bottom_right);
+		lock_release(inter->bottom_left);
+		lock_acquire(inter->top_right);
+		lock_release(inter->bottom_right);
+		lock_release(inter->top_right);
+	}	
+		
 	return;
 }

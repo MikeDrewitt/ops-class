@@ -160,6 +160,13 @@ void matchmaker(uint32_t);
 /*
  * stoplight.c.
  */
+struct intersection {
+	struct lock *top_left;
+	struct lock *top_right;
+	struct lock *bottom_left;
+	struct lock *bottom_right;
+};
+struct intersection *inter;
 
 void gostraight(uint32_t, uint32_t);
 void turnleft(uint32_t, uint32_t);

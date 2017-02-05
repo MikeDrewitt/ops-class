@@ -631,6 +631,7 @@ int stoplight(int nargs, char **args) {
 	test_status = TEST161_SUCCESS;
 
 	stoplight_init();
+	kprintf("*****");
 
 	for (i = 0; i < NCARS; i++) {
 		kprintf_t(".");
