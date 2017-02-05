@@ -165,6 +165,7 @@ struct intersection {
 	struct lock *top_right;
 	struct lock *bottom_left;
 	struct lock *bottom_right;
+    struct semaphore *intersection_count;
 };
 struct intersection *inter;
 
