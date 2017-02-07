@@ -55,7 +55,16 @@
  */
 
 struct mating *mate;
+
 void whalemating_init() {
+
+	mate = kmalloc(sizeof(struct mating));	
+
+	mate->male_sem = sem_create("male_sem", 0);
+	mate->female_sem = sem_create("female_sem", 0);
+	mate->male_wait_sem = sem_create("male_wait_sem", 0);
+	mate->female_wait_sem = sem_create("female_wait_sem", 0);
+
 	return;
 }
 
@@ -65,38 +74,57 @@ void whalemating_init() {
 
 void
 whalemating_cleanup() {
+
+	sem_destroy(mate->male_sem);
+	sem_destroy(mate->female_sem);
+	sem_destroy(mate->male_wait_sem);
+	sem_destroy(mate->female_wait_sem);
+	
+	kfree(mate);
+
 	return;
 }
 
 void
 male(uint32_t index)
 {
-	(void)index;
-	/*
-	 * Implement this function by calling male_start and male_end when
-	 * appropriate.
-	 */
+	V(mate->male_sem);
+
+	male_start(index);
+
+	P(mate->male_wait_sem);
+
+	male_end(index);
+
 	return;
 }
 
 void
 female(uint32_t index)
 {
-	(void)index;
-	/*
-	 * Implement this function by calling female_start and female_end when
-	 * appropriate.
-	 */
+	V(mate->female_sem);
+
+	female_start(index);
+
+	P(mate->female_wait_sem);
+
+	female_end(index);
+
 	return;
 }
 
 void
 matchmaker(uint32_t index)
 {
-	(void)index;
-	/*
-	 * Implement this function by calling matchmaker_start and matchmaker_end
-	 * when appropriate.
-	 */
+	P(mate->male_sem);
+	P(mate->female_sem);
+
+	matchmaker_start(index);
+
+	V(mate->male_wait_sem);
+	V(mate->female_wait_sem);
+
+	matchmaker_end(index);
+
 	return;
 }

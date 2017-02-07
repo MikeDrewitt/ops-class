@@ -151,9 +151,10 @@ int stoplight(int, char **);
  * whalemating.c.
  */
 struct mating {
-    struct lock *male;
-    struct lock *female;
-    struct lock *matchmaker;
+    struct semaphore *male_sem;
+    struct semaphore *female_sem;
+    struct semaphore *male_wait_sem;
+    struct semaphore *female_wait_sem;
 };
 struct mating *mate;
 
