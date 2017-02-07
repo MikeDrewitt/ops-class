@@ -156,8 +156,10 @@ void cv_broadcast(struct cv *cv, struct lock *lock);
 
 struct rwlock {
         char *rwlock_name;
-        struct semaphore *rwlock_sem;
         struct lock *rwlock_thread;
+        struct cv *rwlock_cv;
+        bool writing;
+        int reading;
         // add what you need here
         // (don't forget to mark things volatile as needed)
 };
@@ -180,7 +182,7 @@ void rwlock_destroy(struct rwlock *);
 void rwlock_acquire_read(struct rwlock *);
 void rwlock_release_read(struct rwlock *);
 void rwlock_acquire_write(struct rwlock *);
-void rwloc
+void rwlock_release_write(struct rwlock *);
 /*
  * Operations:
  *    rwlock_acquire_read  - Get the lock for reading. Multiple threads can
@@ -191,6 +193,6 @@ void rwloc
  *    rwlock_release_write - Free the write lock.
  *
  * These operations must be atomic. You get to write them.
- */k_release_write(struct rwlock *);
+ */
 
 #endif /* _SYNCH_H_ */

@@ -171,6 +171,7 @@ lock_destroy(struct lock *lock)
 	kfree(lock);
 }
 //this is basically P for semaphores
+
 void
 lock_acquire(struct lock *lock)
 {
@@ -187,6 +188,7 @@ lock_acquire(struct lock *lock)
 
 	spinlock_release(&lock->lock_lock);
 }
+
 //basically V for semaphores
 void
 lock_release(struct lock *lock)
@@ -314,8 +316,6 @@ cv_broadcast(struct cv *cv, struct lock *lock)
 // END
 }
 
-#define MAX_READERS 100
-
 struct rwlock *
 rwlock_create(const char *name)
 {
@@ -332,32 +332,21 @@ rwlock_create(const char *name)
 		return NULL;
 	}
 
-	rwlock->rwlock_sem = sem_create("rwlock_sem", MAX_READERS);
+	rwlock->rwlock_cv = cv_create("rwlock_sem");
 	rwlock->rwlock_thread = lock_create("rwlock_thread");
+
+	rwlock->writing = false;
+	rwlock->reading = 0;
 
 	return rwlock;
 }
-
-/*
- * Operations:
- *    rwlock_acquire_read  - Get the lock for reading. Multiple threads can
- *                          hold the lock for reading at the same time.
- *    rwlock_release_read  - Free the lock. 
- *    rwlock_acquire_write - Get the lock for writing. Only one thread can
- *                           hold the write lock at one time.
- *    rwlock_release_write - Free the write lock.
- *
- * These operations must be atomic. You get to write them.
- */
-
-
 
 void
 rwlock_destroy(struct rwlock *rwlock)
 {
 	KASSERT(rwlock != NULL);
 
-	sem_destroy(rwlock->rwlock_sem);
+	cv_destroy(rwlock->rwlock_cv);
 	lock_destroy(rwlock->rwlock_thread);
 
 	kfree(rwlock->rwlock_name);
@@ -367,25 +356,37 @@ rwlock_destroy(struct rwlock *rwlock)
 void 
 rwlock_acquire_read(struct rwlock *rwlock)
 {
-	P(rwlock->rwlock_sem);
+	if (!rwlock->writing) {
+		//read
+		rwlock->reading++;
+	}
+	else {
+		cv_wait(rwlock->rwlock_cv, rwlock->rwlock_thread);
+	}
 }
 
 void
 rwlock_release_read(struct rwlock *rwlock)
 {
-	V(rwlock->rwlock_sem);
+	rwlock->reading--;
+	cv_broadcast(rwlock->rwlock_cv, rwlock->rwlock_thread);
 }
 	
 void 
 rwlock_acquire_write(struct rwlock *rwlock)
 {
-	lock_acquire(rwlock->rwlock_thread);
-	rwlock->rwlock_sem->sem_count = 0;
+	if (rwlock->reading == 0) {
+		//write
+		rwlock->writing = true;
+	}
+	else {
+		cv_wait(rwlock->rwlock_cv, rwlock->rwlock_thread);
+	}
 }
 
 void
 rwlock_release_write(struct rwlock *rwlock)
 {
-	rwlock->rwlock_sem->sem_count = MAX_READERS;
-	lock_release(rwlock->rwlock_thread);
+	rwlock->writing = false;
+	cv_broadcast(rwlock->rwlock_cv, rwlock->rwlock_thread);
 }
