@@ -73,8 +73,21 @@
  * Called by the driver during initialization.
  */
 
+
+struct intersection *inter;
+
 void
 stoplight_init() {
+	
+	inter = kmalloc(sizeof(struct intersection));
+
+	inter->top_left = lock_create("top_left");
+	inter->top_right = lock_create("top_right");
+	inter->bottom_left = lock_create("bottom_left");
+	inter->bottom_right = lock_create("bottom_right");
+
+	inter->intersection_count = sem_create("intersection_count", 3);
+
 	return;
 }
 
@@ -83,36 +96,154 @@ stoplight_init() {
  */
 
 void stoplight_cleanup() {
+	lock_destroy(inter->top_left);
+	lock_destroy(inter->top_right);
+	lock_destroy(inter->bottom_left);
+	lock_destroy(inter->bottom_right);
+
+	sem_destroy(inter->intersection_count);
+
+	kfree(inter);
+
 	return;
 }
 
 void
 turnright(uint32_t direction, uint32_t index)
 {
-	(void)direction;
-	(void)index;
-	/*
-	 * Implement this function.
-	 */
+	
+	P(inter->intersection_count);
+
+	if (direction == 0) {
+		lock_acquire(inter->top_left);
+		inQuadrant(direction, index);
+		leaveIntersection(index);
+		lock_release(inter->top_left);
+	} 
+	else if (direction == 1) {
+		lock_acquire(inter->top_right);
+		inQuadrant(direction, index);
+		leaveIntersection(index);
+		lock_release(inter->top_right);
+	}
+	else if (direction == 2) {
+		lock_acquire(inter->bottom_right);
+		inQuadrant(direction, index);
+		leaveIntersection(index);
+		lock_release(inter->bottom_right);
+	}
+	else if (direction == 3) {
+		lock_acquire(inter->bottom_left);
+		inQuadrant(direction, index);
+		leaveIntersection(index);
+		lock_release(inter->bottom_left);
+	}	
+		
+	V(inter->intersection_count);
+
 	return;
 }
 void
 gostraight(uint32_t direction, uint32_t index)
 {
-	(void)direction;
-	(void)index;
-	/*
-	 * Implement this function.
-	 */
+	P(inter->intersection_count);
+
+	if (direction == 0) {
+		lock_acquire(inter->top_left);
+		inQuadrant(0, index);
+		lock_acquire(inter->bottom_left);
+		inQuadrant(3, index);
+		lock_release(inter->top_left);
+		leaveIntersection(index);
+		lock_release(inter->bottom_left);
+	} 
+	else if (direction == 1) {
+		lock_acquire(inter->top_right);
+		inQuadrant(1, index);
+		lock_acquire(inter->top_left);
+		inQuadrant(0, index);
+		lock_release(inter->top_right);
+		leaveIntersection(index);
+		lock_release(inter->top_left);
+	}
+	else if (direction == 2) {
+		lock_acquire(inter->bottom_right);
+		inQuadrant(2, index);
+		lock_acquire(inter->top_right);
+		inQuadrant(1, index);
+		lock_release(inter->bottom_right);
+		leaveIntersection(index);
+		lock_release(inter->top_right);
+	}
+	else if (direction == 3) {
+		lock_acquire(inter->bottom_left);
+		inQuadrant(3, index);
+		lock_acquire(inter->bottom_right);
+		inQuadrant(2, index);
+		lock_release(inter->bottom_left);
+		leaveIntersection(index);
+		lock_release(inter->bottom_right);
+	}	
+		
+	V(inter->intersection_count);
+
 	return;
 }
 void
 turnleft(uint32_t direction, uint32_t index)
 {
-	(void)direction;
-	(void)index;
-	/*
-	 * Implement this function.
-	 */
+	P(inter->intersection_count);
+
+	if (direction == 0) {
+		lock_acquire(inter->top_left);
+		inQuadrant(0, index);
+		lock_acquire(inter->bottom_left);
+		inQuadrant(3, index);
+		lock_release(inter->top_left);
+		lock_acquire(inter->bottom_right);
+		inQuadrant(2, index);
+		lock_release(inter->bottom_left);
+		leaveIntersection(index);
+		lock_release(inter->bottom_right);
+	} 
+	else if (direction == 1) {
+		lock_acquire(inter->top_right);
+		inQuadrant(1, index);
+		lock_acquire(inter->top_left);
+		inQuadrant(0, index);
+		lock_release(inter->top_right);
+		lock_acquire(inter->bottom_left);
+		inQuadrant(3, index);
+		lock_release(inter->top_left);
+		leaveIntersection(index);
+		lock_release(inter->bottom_left);
+	}
+	else if (direction == 2) {
+		lock_acquire(inter->bottom_right);
+		inQuadrant(2, index);
+		lock_acquire(inter->top_right);
+		inQuadrant(1, index);
+		lock_release(inter->bottom_right);
+		lock_acquire(inter->top_left);
+		inQuadrant(0, index);
+		lock_release(inter->top_right);
+		leaveIntersection(index);
+		lock_release(inter->top_left);
+	}
+	else if (direction == 3) {
+		lock_acquire(inter->bottom_left);
+		inQuadrant(3, index);
+		lock_acquire(inter->bottom_right);
+		inQuadrant(2, index);
+		lock_release(inter->bottom_left);
+		lock_acquire(inter->top_right);
+		inQuadrant(1, index);
+		lock_release(inter->bottom_right);
+		leaveIntersection(index);
+		lock_release(inter->top_right);
+	}	
+		
+	V(inter->intersection_count);
+
 	return;
 }
