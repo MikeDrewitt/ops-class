@@ -361,6 +361,7 @@ rwlock_acquire_read(struct rwlock *rwlock)
 		rwlock->reading++;
 	}
 	else {
+		// same comment as below?
 		cv_wait(rwlock->rwlock_cv, rwlock->rwlock_thread);
 	}
 }
@@ -369,6 +370,7 @@ void
 rwlock_release_read(struct rwlock *rwlock)
 {
 	rwlock->reading--;
+	// Same comment as below?
 	cv_broadcast(rwlock->rwlock_cv, rwlock->rwlock_thread);
 }
 	
@@ -376,17 +378,19 @@ void
 rwlock_acquire_write(struct rwlock *rwlock)
 {
 	if (rwlock->reading == 0) {
-		//write
+		// Should this acquire the lock so nothing else can and release in release?
 		rwlock->writing = true;
 	}
 	else {
+		// Is this the correct way to be using cv_wait?
 		cv_wait(rwlock->rwlock_cv, rwlock->rwlock_thread);
 	}
 }
 
 void
 rwlock_release_write(struct rwlock *rwlock)
-{
+{	
+	// Should this be in a spin lock?
 	rwlock->writing = false;
 	cv_broadcast(rwlock->rwlock_cv, rwlock->rwlock_thread);
 }
