@@ -44,6 +44,17 @@
  * Called by the driver during initialization.
  */
 
+/*
+ * only three whales alowed, but they have to be of a certain type...
+ * possibly 3 locks, that will only accept male, female, matchmaker.
+ *
+ * use of CV to only lock on Male, Female, or Match?
+ *
+ * if all three are locked then we can mate, otherwsie continue to wait
+ *
+ */
+
+struct mating *mate;
 void whalemating_init() {
 	return;
 }

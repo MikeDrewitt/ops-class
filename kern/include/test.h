@@ -150,6 +150,12 @@ int stoplight(int, char **);
 /*
  * whalemating.c.
  */
+struct mating {
+    struct lock *male;
+    struct lock *female;
+    struct lock *matchmaker;
+};
+struct mating *mate;
 
 void whalemating_init(void);
 void whalemating_cleanup(void);
