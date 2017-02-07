@@ -314,6 +314,8 @@ cv_broadcast(struct cv *cv, struct lock *lock)
 // END
 }
 
+#define MAX_READERS 100
+
 struct rwlock *
 rwlock_create(const char *name)
 {
@@ -330,7 +332,8 @@ rwlock_create(const char *name)
 		return NULL;
 	}
 
-	(void)name;
+	rwlock->rwlock_sem = sem_create("rwlock_sem", MAX_READERS);
+	rwlock->rwlock_thread = lock_create("rwlock_thread");
 
 	return rwlock;
 }
@@ -346,32 +349,43 @@ rwlock_create(const char *name)
  *
  * These operations must be atomic. You get to write them.
  */
+
+
+
 void
 rwlock_destroy(struct rwlock *rwlock)
 {
-	(void)rwlock;
+	KASSERT(rwlock != NULL);
+
+	sem_destroy(rwlock->rwlock_sem);
+	lock_destroy(rwlock->rwlock_thread);
+
+	kfree(rwlock->rwlock_name);
+	kfree(rwlock);
 }
 
 void 
 rwlock_acquire_read(struct rwlock *rwlock)
 {
-	(void)rwlock;
+	P(rwlock->rwlock_sem);
 }
 
 void
 rwlock_release_read(struct rwlock *rwlock)
 {
-	(void)rwlock;
+	V(rwlock->rwlock_sem);
 }
 	
 void 
 rwlock_acquire_write(struct rwlock *rwlock)
 {
-	(void)rwlock;
+	lock_acquire(rwlock->rwlock_thread);
+	rwlock->rwlock_sem->sem_count = 0;
 }
 
 void
 rwlock_release_write(struct rwlock *rwlock)
 {
-	(void)rwlock;
+	rwlock->rwlock_sem->sem_count = MAX_READERS;
+	lock_release(rwlock->rwlock_thread);
 }
