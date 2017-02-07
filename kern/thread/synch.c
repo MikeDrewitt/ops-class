@@ -101,18 +101,6 @@ P(struct semaphore *sem)
 	/* Use the semaphore spinlock to protect the wchan as well. */
 	spinlock_acquire(&sem->sem_lock);
 	while (sem->sem_count == 0) {
-		/*
-		 *
-		 * Note that we don't maintain strict FIFO ordering of
-		 * threads going through the semaphore; that is, we
-		 * might "get" it on the first try even if other
-		 * threads are waiting. Apparently according to some
-		 * textbooks semaphores must for some reason have
-		 * strict ordering. Too bad. :-)
-		 *
-		 * Exercise: how would you implement strict FIFO
-		 * ordering?
-		 */
 		wchan_sleep(sem->sem_wchan, &sem->sem_lock);
 	}
 	KASSERT(sem->sem_count > 0);
@@ -324,4 +312,66 @@ cv_broadcast(struct cv *cv, struct lock *lock)
 	wchan_wakeall(cv->cv_wchan, &lock->lock_lock);
 	spinlock_release(&lock->lock_lock);
 // END
+}
+
+struct rwlock *
+rwlock_create(const char *name)
+{
+	struct rwlock *rwlock;
+
+	rwlock = kmalloc(sizeof(*rwlock));
+	if (rwlock == NULL) {
+		return NULL;
+	}
+
+	rwlock->rwlock_name = kstrdup(name);
+	if (rwlock->rwlock_name == NULL) {
+		kfree(rwlock);
+		return NULL;
+	}
+
+	(void)name;
+
+	return rwlock;
+}
+
+/*
+ * Operations:
+ *    rwlock_acquire_read  - Get the lock for reading. Multiple threads can
+ *                          hold the lock for reading at the same time.
+ *    rwlock_release_read  - Free the lock. 
+ *    rwlock_acquire_write - Get the lock for writing. Only one thread can
+ *                           hold the write lock at one time.
+ *    rwlock_release_write - Free the write lock.
+ *
+ * These operations must be atomic. You get to write them.
+ */
+void
+rwlock_destroy(struct rwlock *rwlock)
+{
+	(void)rwlock;
+}
+
+void 
+rwlock_acquire_read(struct rwlock *rwlock)
+{
+	(void)rwlock;
+}
+
+void
+rwlock_release_read(struct rwlock *rwlock)
+{
+	(void)rwlock;
+}
+	
+void 
+rwlock_acquire_write(struct rwlock *rwlock)
+{
+	(void)rwlock;
+}
+
+void
+rwlock_release_write(struct rwlock *rwlock)
+{
+	(void)rwlock;
 }
