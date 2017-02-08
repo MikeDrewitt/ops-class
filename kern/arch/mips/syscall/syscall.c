@@ -104,6 +104,12 @@ syscall(struct trapframe *tf)
 		err = sys_reboot(tf->tf_a0);
 		break;
 
+		case SYS_write:
+		// needs same args as function declaration
+		// write(int fd, const void *buf, size_t nbytes);
+		err = sys_write(tf->tf_a0, &tf->tf_a1, tf->tf_a2);
+		break;
+
 	    case SYS___time:
 		err = sys___time((userptr_t)tf->tf_a0,
 				 (userptr_t)tf->tf_a1);
