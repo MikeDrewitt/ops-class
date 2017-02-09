@@ -23,7 +23,7 @@ sys_write(int fd, const void *buf, size_t nbytes)
 {
 	// implement write
 	//
-	
+	kprintf(buff);	
 	(void)fd;
 	(void)buf;
 	(void)nbytes;

@@ -24,6 +24,9 @@ sys_open(const char *filename, int flags)
 	
 	(void)filename;
 	(void)flags;
+	int result;
+	struct vnode *v;
+	
 	
 	if (filename == NULL) {
 		return EFAULT;
@@ -31,22 +34,36 @@ sys_open(const char *filename, int flags)
 
 	switch(flags) {
 		case O_RDONLY:
+			result = vfs_open(filename, flags, 0, &v);
+			if(result){
+				return result;
+				//some error
+			}
 			// readonly
 			break;
 		case O_WRONLY:
+			result = vfs_open(filename, flags, 0, &v);
+			if(result){
+				return result;	//some error
+			}
 			// write only
 			break;
 		case O_RDWR:
+			result = vfs_open(filename, flags, 0, &v);
+			if(result){
+				return result;
+			}
+
 			// both
 			break;	
 		default:
 			panic("Not proper flags.");	
 	}
 	
-	struct fd *file_descriptor = curthread->t_fdtabel;
+	//struct fd *file_descriptor = curthread->t_fdtabel;
 
-	for (int i = 0; ) {
-	}
+	//for (int i = 0; ) {
+	//}
 
 	return 0;
 }
