@@ -71,7 +71,7 @@ struct proc {
 	struct vnode *p_cwd;		/* current working directory */
 	/* add more material here as needed */
 
-    struct fd_tabel *p_filetabel;
+    struct fd_tabel *p_filetabel[];
 };
 
 struct fd_tabel {

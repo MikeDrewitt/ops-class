@@ -19,7 +19,7 @@
 int
 sys_open(const char *filename, int flags)
 {
-	// implement open
+// implement open
 	//
 	
 	(void)filename;
@@ -36,6 +36,13 @@ sys_open(const char *filename, int flags)
 	if (flags != O_RDONLY && flags != O_WRONGLY && flags != O_RDWR) {
 		return EINVAL;
 	}
+
+	int i = 0;
+	while (curproc->p_filetabel[i] != NULL) {
+		i++;
+	}
+
+	// i is now the location that we can open new data as that memory is null
 
 	/* 
 	switch(flags) {
