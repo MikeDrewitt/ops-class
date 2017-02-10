@@ -57,7 +57,7 @@ struct vnode;
  * find you need a sleeplock in here for other reasons as well.
  * However, note that p_addrspace must be protected by a spinlock:
  * thread_switch needs to be able to fetch the current address space
- * without sleeping.
+ * without sleeping. 
  */
 struct proc {
 	char *p_name;			/* Name of this process */
@@ -70,6 +70,8 @@ struct proc {
 	/* VFS */
 	struct vnode *p_cwd;		/* current working directory */
 	/* add more material here as needed */
+
+    struct fd_tabel *p_filetabel;
 };
 
 struct fd_tabel {
@@ -77,6 +79,8 @@ struct fd_tabel {
     struct addrspace *fd_addrspace;
 
     struct spinlock *fd_lock;
+
+    
 
 };
 

@@ -27,12 +27,17 @@ sys_open(const char *filename, int flags)
 	int result;
 	struct vnode *v;
 	
-	
+	// Filename invalid pointer
 	if (filename == NULL) {
 		return EFAULT;
 	}
 
-	/*
+	// Non-valid flags
+	if (flags != O_RDONLY && flags != O_WRONGLY && flags != O_RDWR) {
+		return EINVAL;
+	}
+
+	/* 
 	switch(flags) {
 		case O_RDONLY:
 			result = vfs_open(filename, flags, 0, &v);
@@ -63,11 +68,9 @@ sys_open(const char *filename, int flags)
 	*/
 
 	result = vfs_open(filename, flags, 0, &v);
-	
-	//struct fd *file_descriptor = curthread->t_fdtabel;
-
-	//for (int i = 0; ) {
-	//}
+	if(result){
+		return result;
+	}
 
 	return 0;
 }
