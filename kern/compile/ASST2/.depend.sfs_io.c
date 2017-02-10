@@ -5,5 +5,5 @@ sfs_io.o: ../../fs/sfs/sfs_io.c ../../include/types.h \
  ../../include/uio.h ../../include/kern/iovec.h ../../include/vfs.h \
  ../../include/array.h ../../include/device.h ../../include/sfs.h \
  ../../include/fs.h ../../include/vnode.h ../../include/spinlock.h \
- includelinks/machine/spinlock.h ../../include/kern/sfs.h \
- ../../fs/sfs/sfsprivate.h
+ ../../include/hangman.h opt-hangman.h includelinks/machine/spinlock.h \
+ ../../include/kern/sfs.h ../../fs/sfs/sfsprivate.h

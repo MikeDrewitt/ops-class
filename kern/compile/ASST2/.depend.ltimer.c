@@ -4,6 +4,6 @@ ltimer.o: ../../dev/lamebus/ltimer.c ../../include/types.h \
  opt-noasserts.h ../../include/spl.h ../../include/clock.h \
  ../../include/kern/time.h includelinks/platform/bus.h \
  includelinks/machine/vm.h ../../dev/lamebus/lamebus.h \
- ../../include/cpu.h ../../include/spinlock.h \
- includelinks/machine/spinlock.h ../../include/threadlist.h \
+ ../../include/cpu.h ../../include/spinlock.h ../../include/hangman.h \
+ opt-hangman.h includelinks/machine/spinlock.h ../../include/threadlist.h \
  ../../dev/lamebus/ltimer.h autoconf.h

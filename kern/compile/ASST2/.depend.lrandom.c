@@ -4,5 +4,5 @@ lrandom.o: ../../dev/lamebus/lrandom.c ../../include/types.h \
  opt-noasserts.h ../../include/uio.h ../../include/kern/iovec.h \
  includelinks/platform/bus.h includelinks/machine/vm.h \
  ../../dev/lamebus/lamebus.h ../../include/cpu.h ../../include/spinlock.h \
- includelinks/machine/spinlock.h ../../include/threadlist.h \
- ../../dev/lamebus/lrandom.h autoconf.h
+ ../../include/hangman.h opt-hangman.h includelinks/machine/spinlock.h \
+ ../../include/threadlist.h ../../dev/lamebus/lrandom.h autoconf.h
