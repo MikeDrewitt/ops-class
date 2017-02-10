@@ -80,6 +80,7 @@ struct lock {
         struct spinlock lock_lock;
 //added stuff above        
         
+        HANGMAN_LOCKABLE(lk_hangman);   /* Deadlock detector hook. */
         // (don't forget to mark things volatile as needed)
 };
 

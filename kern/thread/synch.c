@@ -165,6 +165,10 @@ lock_create(const char *name)
 	spinlock_init(&lock->lock_lock);
 // added stuff above
 
+	HANGMAN_LOCKABLEINIT(&lock->lk_hangman, lock->lk_name);
+
+	// add stuff here as needed
+
 	return lock;
 }
 
@@ -198,6 +202,14 @@ lock_acquire(struct lock *lock)
 	lock->lock_thread = curthread;
 
 	spinlock_release(&lock->lock_lock);
+	/* Call this (atomically) before waiting for a lock */
+	//HANGMAN_WAIT(&curthread->t_hangman, &lock->lk_hangman);
+
+	// Write this
+
+
+	/* Call this (atomically) once the lock is acquired */
+	//HANGMAN_ACQUIRE(&curthread->t_hangman, &lock->lk_hangman);
 }
 //basically V for semaphores
 void
@@ -211,6 +223,10 @@ lock_release(struct lock *lock)
 		
 	lock->lock_thread = NULL;
 	wchan_wakeone(lock->lock_wchan, &lock->lock_lock);
+	/* Call this (atomically) when the lock is released */
+	//HANGMAN_RELEASE(&curthread->t_hangman, &lock->lk_hangman);
+
+	// Write this
 
 	spinlock_release(&lock->lock_lock);
 }
