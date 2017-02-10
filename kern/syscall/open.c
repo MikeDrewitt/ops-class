@@ -32,6 +32,7 @@ sys_open(const char *filename, int flags)
 		return EFAULT;
 	}
 
+	/*
 	switch(flags) {
 		case O_RDONLY:
 			result = vfs_open(filename, flags, 0, &v);
@@ -59,6 +60,9 @@ sys_open(const char *filename, int flags)
 		default:
 			panic("Not proper flags.");	
 	}
+	*/
+
+	result = vfs_open(filename, flags, 0, &v);
 	
 	//struct fd *file_descriptor = curthread->t_fdtabel;
 

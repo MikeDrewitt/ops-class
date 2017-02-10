@@ -73,6 +73,11 @@ struct proc {
 	/* add more material here as needed */
 };
 
+struct fd_tabel {
+    struct vnode *file_node;
+    struct addrspace *addr_space;
+};
+
 /* This is the process structure for the kernel and for kernel-only threads. */
 extern struct proc *kproc;
 
