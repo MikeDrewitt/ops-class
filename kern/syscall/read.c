@@ -8,8 +8,9 @@
  * read syscall 
  */
 ssize_t
-sys_read(int fd, void *buf, size_t buflen)
+sys_read(int32_t *retval, int fd, void *buf, size_t buflen)
 {
+	(void)retval;	
 	(void)fd;	
 	(void)buf;
 	(void)buflen;

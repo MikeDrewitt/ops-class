@@ -9,8 +9,9 @@
  */
 
 int
-sys_open(const char *filename, int flags)
+sys_open(int32_t *retval, const char *filename, int flags)
 {
+	(void) retval;
 	(void)filename;
 	(void)flags;
 	
