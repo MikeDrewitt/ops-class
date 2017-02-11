@@ -36,9 +36,9 @@ sys_open(int32_t *retval, const char *filename, int flags)
 	}
 
 	// Are we supposed to declare this with a static size, brijesh says so . . .
-	char *name_copy = kmalloc(sizeof(char) * 128);
+	char name_copy[128];
 
-	copyinstr((const_userptr_t)filename, name_copy, (size_t)sizeof(name_copy), 0);
+	copyinstr((const_userptr_t)filename, name_copy, 128, 0);
 	result = vfs_open(name_copy, flags, 0, &v);		
 
 	/*
@@ -46,8 +46,6 @@ sys_open(int32_t *retval, const char *filename, int flags)
 	 * increment the file handler
 	 */
 	
-	kfree(name_copy);
-
 	// supposed to return file handle or -1 
 	if (result) {
 		return result;
