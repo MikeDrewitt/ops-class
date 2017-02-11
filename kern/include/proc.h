@@ -70,7 +70,15 @@ struct proc {
 	/* VFS */
 	struct vnode *p_cwd;		/* current working directory */
 
+    struct file_tabel *p_ft[];  /*     */
 	/* add more material here as needed */
+};
+
+struct file_tabel {
+    struct vnode *ft_vnode;
+    struct spinlock *ft_spinlock;
+
+    struct addrspace *ft_addrspace;
 };
 
 /* This is the process structure for the kernel and for kernel-only threads. */
