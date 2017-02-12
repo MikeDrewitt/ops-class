@@ -35,7 +35,6 @@ sys_open(int32_t *retval, const char *filename, int flags)
 		return -1;
 	}
 
-	// Are we supposed to declare this with a static size, brijesh says so . . .
 	char name_copy[128];
 
 	copyinstr((const_userptr_t)filename, name_copy, 128, 0);
@@ -44,11 +43,14 @@ sys_open(int32_t *retval, const char *filename, int flags)
 	/*
 	 * do actual logic for after open here such as finding a spot to open into
 	 * increment the file handler
+	 *
+	 * iterate over filetable and return a new value that will be the file handle
 	 */
-	
+
 	// supposed to return file handle or -1 
+	// if true then open worked
 	if (result) {
-		return result;
+		
 	}
 
 	return 0;
