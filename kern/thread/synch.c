@@ -381,7 +381,7 @@ rwlock_acquire_read(struct rwlock *rwlock)
 
 	// if writing currently, wait.
 	// else aquire read.
-	if (rwlock->write_count != 0 || 
+	while (rwlock->write_count != 0 || 
 		!wchan_isempty(rwlock->rwlock_writewchan, &rwlock->rwlock_lock)) {
 		wchan_sleep(rwlock->rwlock_readwchan, &rwlock->rwlock_lock);
 	}
@@ -398,8 +398,7 @@ rwlock_release_read(struct rwlock *rwlock)
 
 	rwlock->read_count--;
 
-	if (rwlock->read_count == 0 &&
-		!wchan_isempty(rwlock->rwlock_writewchan, &rwlock->rwlock_lock)) {
+	while (rwlock->read_count == 0) {
 		wchan_wakeone(rwlock->rwlock_writewchan, &rwlock->rwlock_lock);
 	}	
 
@@ -413,7 +412,7 @@ rwlock_acquire_write(struct rwlock *rwlock)
 
 	// if reading or writing wait
 	// else aqurire write. 
-	if (rwlock->write_count != 0 || rwlock->read_count != 0) {
+	while (rwlock->write_count != 0 || rwlock->read_count != 0) {
 		wchan_sleep(rwlock->rwlock_writewchan, &rwlock->rwlock_lock);
 	}	
 
