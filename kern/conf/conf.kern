@@ -389,6 +389,7 @@ file      syscall/runprogram.c
 file      syscall/time_syscalls.c
 file      syscall/read.c
 file      syscall/open.c
+file      syscall/write.c
 
 #
 # Startup and initialization

@@ -82,6 +82,8 @@ proc_create(const char *name)
 	/* VFS fields */
 	proc->p_cwd = NULL;
 
+	proc->p_filetable;
+
 	return proc;
 }
 
@@ -179,6 +181,13 @@ void
 proc_bootstrap(void)
 {
 	kproc = proc_create("[kernel]");
+	
+	/*	
+	kproc->p_ft[0] = STDIN;
+	kproc->p_ft[1] = STDOUT;
+	kproc->p_ft[2] = STDERR;
+	*/
+
 	if (kproc == NULL) {
 		panic("proc_create for kproc failed\n");
 	}
