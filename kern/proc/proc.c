@@ -62,11 +62,7 @@ struct proc *
 proc_create(const char *name)
 {
 	struct proc *proc;
-	struct file_tabel *ft;
-	ft = kmalloc(sizeof(ft));
-	if(ft == NULL){
-		return NULL;
-	}
+
 	proc = kmalloc(sizeof(*proc));
 	if (proc == NULL) {
 		return NULL;
@@ -85,8 +81,6 @@ proc_create(const char *name)
 
 	/* VFS fields */
 	proc->p_cwd = NULL;
-
-	proc->p_filetabel = ft;
 
 	return proc;
 }
@@ -230,6 +224,16 @@ proc_create_runprogram(const char *name)
 		newproc->p_cwd = curproc->p_cwd;
 	}
 	spinlock_release(&curproc->p_lock);
+
+	// initialize consol
+	// set filetable to all NULL,
+	// all entries in 64 array.
+
+	int i;
+	for (i = 0; i < 64; i++) {
+		newproc->p_filetabel[i] = NULL;
+	} 
+
 
 	return newproc;
 }

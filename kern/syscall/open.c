@@ -68,10 +68,9 @@ sys_open(int32_t *retval, const char *filename, int flags)
 	if (!result) {
 
 		int file_descriptor = 0; //position in the file table
-		while (curthread->t_proc->p_filetabel != NULL) {	
-			curthread->t_proc->p_filetabel++;
+		while (curthread->t_proc->p_filetabel[file_descriptor] != NULL) {	
 			file_descriptor++;
-		}
+		}//run out of space? 
 
 		file->ft_vnode = v;
 		file->ft_lock = lock_create("file_lock");
@@ -79,7 +78,7 @@ sys_open(int32_t *retval, const char *filename, int flags)
 		file->flag = flags;
 		file->offset = 0;
 
-		curthread->t_proc->p_filetabel = file;
+		curthread->t_proc->p_filetabel[file_descriptor] = file;
 		// if true then open worked
 		// supposed to return file handle or -1 
 	

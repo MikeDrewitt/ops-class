@@ -62,6 +62,16 @@ struct vnode;
  * thread_switch needs to be able to fetch the current address space
  * without sleeping.
  */
+
+struct file_tabel {
+    struct vnode *ft_vnode;
+    struct lock *ft_lock;
+
+    int flag;               /* read, write, read/write  */
+    int offset;             /* position in the file */
+
+};
+
 struct proc {
 	char *p_name;			/* Name of this process */
 	struct spinlock p_lock;		/* Lock for this structure */
@@ -74,17 +84,8 @@ struct proc {
 	struct vnode *p_cwd;		/* current working directory */
 
     int pid;
-    struct file_tabel *p_filetabel;  /*     */
+    struct file_tabel *p_filetabel[64];  /*     */
 	/* add more material here as needed */
-};
-
-struct file_tabel {
-    struct vnode *ft_vnode;
-    struct lock *ft_lock;
-
-    int flag;               /* read, write, read/write  */
-    int offset;             /* position in the file */
-
 };
 
 /* This is the process structure for the kernel and for kernel-only threads. */
