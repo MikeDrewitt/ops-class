@@ -394,7 +394,7 @@ rwlock_acquire_read(struct rwlock *rwlock)
 void
 rwlock_release_read(struct rwlock *rwlock)
 {
-	KASSERT(rwlock->read_count < 1);
+	KASSERT(rwlock->read_count > 0);
 
 	spinlock_acquire(&rwlock->rwlock_lock);
 
@@ -426,7 +426,7 @@ rwlock_acquire_write(struct rwlock *rwlock)
 void
 rwlock_release_write(struct rwlock *rwlock)
 {
-	KASSERT(rwlock->write_count < 1);
+	KASSERT(rwlock->write_count > 0);
 
 	spinlock_acquire(&rwlock->rwlock_lock);
 
