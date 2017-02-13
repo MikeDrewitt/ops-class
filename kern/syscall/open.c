@@ -8,12 +8,22 @@
 #include <current.h>
 #include <proc.h>
 #include <synch.h>
+
 #include <kern/errno.h>
 #include <kern/unistd.h>
 #include <kern/fcntl.h>
 
 /*
- * read syscall 
+ * uses vfs open to open the file,
+ * gets all of the information from the vnode that is passed in there
+ *
+ * supposed to return the index in the array for the file descriptor
+ *
+ * TODO 
+ *	error handling
+ *	code refractor because Mike can't spell
+ *	make sure the function is working properly
+ *	free the malloc somewhere . . . close?
  */
 
 int
