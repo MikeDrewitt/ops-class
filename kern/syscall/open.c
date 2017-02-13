@@ -55,21 +55,25 @@ sys_open(int32_t *retval, const char *filename, int flags)
 	 * iterate over filetable and return a new value that will be the file handle
 	 */
 	
-	int file_descriptor = 0; //position in the file table
-	while (curthread->t_proc->p_filetabel[file_descriptor] != NULL) {
-		
-		file_descriptor++;
+	if (!result) {
+
+		int file_descriptor = 0; //position in the file table
+		while (curthread->t_proc->p_filetabel != NULL) {	
+			curthread->t_proc->p_filetabel++;
+			file_descriptor++;
+		}
+
+		file->ft_vnode = v;
+		file->ft_lock = lock_create("file_lock");
+	
+		file->flag = flags;
+		file->offset = 0;
+
+		curthread->t_proc->p_filetabel = file;
+		// if true then open worked
+		// supposed to return file handle or -1 
+	
+		return file_descriptor;
 	}
-
-	file->ft_vnode = v;
-	file->ft_lock = lock_create("file_lock");
-	
-	file->flag = flags;
-	file->offset = 0;
-
-	curproc->p_filetabel[file_descriptor] = file;
-	// if true then open worked
-	// supposed to return file handle or -1 
-	
-	return file_descriptor;
+	return -1;
 }
