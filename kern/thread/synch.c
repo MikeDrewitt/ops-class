@@ -101,18 +101,6 @@ P(struct semaphore *sem)
 	/* Use the semaphore spinlock to protect the wchan as well. */
 	spinlock_acquire(&sem->sem_lock);
 	while (sem->sem_count == 0) {
-		/*
-		 *
-		 * Note that we don't maintain strict FIFO ordering of
-		 * threads going through the semaphore; that is, we
-		 * might "get" it on the first try even if other
-		 * threads are waiting. Apparently according to some
-		 * textbooks semaphores must for some reason have
-		 * strict ordering. Too bad. :-)
-		 *
-		 * Exercise: how would you implement strict FIFO
-		 * ordering?
-		 */
 		wchan_sleep(sem->sem_wchan, &sem->sem_lock);
 	}
 	KASSERT(sem->sem_count > 0);
@@ -187,6 +175,7 @@ lock_destroy(struct lock *lock)
 	kfree(lock);
 }
 //this is basically P for semaphores
+
 void
 lock_acquire(struct lock *lock)
 {
@@ -211,6 +200,7 @@ lock_acquire(struct lock *lock)
 	/* Call this (atomically) once the lock is acquired */
 	//HANGMAN_ACQUIRE(&curthread->t_hangman, &lock->lk_hangman);
 }
+
 //basically V for semaphores
 void
 lock_release(struct lock *lock)
@@ -340,4 +330,109 @@ cv_broadcast(struct cv *cv, struct lock *lock)
 	wchan_wakeall(cv->cv_wchan, &lock->lock_lock);
 	spinlock_release(&lock->lock_lock);
 // END
+}
+
+struct rwlock *
+rwlock_create(const char *name)
+{
+	struct rwlock *rwlock;
+
+	rwlock = kmalloc(sizeof(*rwlock));
+
+	if (rwlock == NULL) {
+		return NULL;
+	}
+
+	rwlock->rwlock_name = kstrdup(name);
+	if (rwlock->rwlock_name == NULL) {
+		kfree(rwlock);
+		return NULL;
+	}
+
+	spinlock_init(&rwlock->rwlock_lock);
+
+	rwlock->read_count = 0;
+	rwlock->write_count = 0;
+
+	rwlock->rwlock_readwchan = wchan_create(rwlock->rwlock_name);
+	rwlock->rwlock_writewchan = wchan_create(rwlock->rwlock_name);
+
+	return rwlock;
+}
+
+void
+rwlock_destroy(struct rwlock *rwlock)
+{
+	KASSERT(rwlock != NULL);
+
+	spinlock_cleanup(&rwlock->rwlock_lock);
+
+	wchan_destroy(rwlock->rwlock_readwchan);
+	wchan_destroy(rwlock->rwlock_writewchan);
+
+	kfree(rwlock->rwlock_name);
+	kfree(rwlock);
+}
+
+void 
+rwlock_acquire_read(struct rwlock *rwlock)
+{
+	spinlock_acquire(&rwlock->rwlock_lock);
+
+	// if writing currently, wait.
+	// else aquire read.
+	while (rwlock->write_count != 0 || 
+		!wchan_isempty(rwlock->rwlock_writewchan, &rwlock->rwlock_lock)) {
+		wchan_sleep(rwlock->rwlock_readwchan, &rwlock->rwlock_lock);
+	}
+	
+	rwlock->read_count++;
+
+	spinlock_release(&rwlock->rwlock_lock);
+}
+
+void
+rwlock_release_read(struct rwlock *rwlock)
+{
+	KASSERT(rwlock->read_count > 0);
+
+	spinlock_acquire(&rwlock->rwlock_lock);
+
+	rwlock->read_count--;
+
+	if (rwlock->read_count == 0) {
+		wchan_wakeall(rwlock->rwlock_writewchan, &rwlock->rwlock_lock);
+		wchan_wakeall(rwlock->rwlock_readwchan, &rwlock->rwlock_lock);
+	}	
+
+	spinlock_release(&rwlock->rwlock_lock);
+}
+	
+void 
+rwlock_acquire_write(struct rwlock *rwlock)
+{
+	spinlock_acquire(&rwlock->rwlock_lock);
+
+	// if reading or writing wait
+	// else aqurire write. 
+	while (rwlock->write_count != 0 || rwlock->read_count != 0) {
+		wchan_sleep(rwlock->rwlock_writewchan, &rwlock->rwlock_lock);
+	}	
+
+	rwlock->write_count++;
+	spinlock_release(&rwlock->rwlock_lock);
+}
+
+void
+rwlock_release_write(struct rwlock *rwlock)
+{
+	KASSERT(rwlock->write_count > 0);
+
+	spinlock_acquire(&rwlock->rwlock_lock);
+
+	wchan_wakeall(rwlock->rwlock_readwchan, &rwlock->rwlock_lock);
+	wchan_wakeall(rwlock->rwlock_writewchan, &rwlock->rwlock_lock);
+	
+	rwlock->write_count--;
+	spinlock_release(&rwlock->rwlock_lock);
 }
