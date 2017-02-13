@@ -398,7 +398,7 @@ rwlock_release_read(struct rwlock *rwlock)
 
 	rwlock->read_count--;
 
-	while (rwlock->read_count == 0) {
+	if (rwlock->read_count == 0) {
 		wchan_wakeall(rwlock->rwlock_writewchan, &rwlock->rwlock_lock);
 		wchan_wakeall(rwlock->rwlock_readwchan, &rwlock->rwlock_lock);
 	}	
