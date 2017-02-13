@@ -157,10 +157,14 @@ void cv_broadcast(struct cv *cv, struct lock *lock);
 
 struct rwlock {
         char *rwlock_name;
-        struct lock *rwlock_thread;
-        struct cv *rwlock_cv;
-        bool writing;
-        int reading;
+
+        struct spinlock rwlock_lock;
+        
+        struct wchan *rwlock_readwchan;
+        struct wchan *rwlock_writewchan;
+
+        int read_count;
+        int write_count;
         // add what you need here
         // (don't forget to mark things volatile as needed)
 };

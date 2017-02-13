@@ -338,6 +338,7 @@ rwlock_create(const char *name)
 	struct rwlock *rwlock;
 
 	rwlock = kmalloc(sizeof(*rwlock));
+
 	if (rwlock == NULL) {
 		return NULL;
 	}
@@ -348,11 +349,13 @@ rwlock_create(const char *name)
 		return NULL;
 	}
 
-	rwlock->rwlock_cv = cv_create("rwlock_sem");
-	rwlock->rwlock_thread = lock_create("rwlock_thread");
+	spinlock_init(&rwlock->rwlock_lock);
 
-	rwlock->writing = false;
-	rwlock->reading = 0;
+	rwlock->read_count = 0;
+	rwlock->write_count = 0;
+
+	rwlock->rwlock_readwchan = wchan_create(rwlock->rwlock_name);
+	rwlock->rwlock_writewchan = wchan_create(rwlock->rwlock_name);
 
 	return rwlock;
 }
@@ -362,8 +365,10 @@ rwlock_destroy(struct rwlock *rwlock)
 {
 	KASSERT(rwlock != NULL);
 
-	cv_destroy(rwlock->rwlock_cv);
-	lock_destroy(rwlock->rwlock_thread);
+	spinlock_cleanup(&rwlock->rwlock_lock);
+
+	wchan_destroy(rwlock->rwlock_readwchan);
+	wchan_destroy(rwlock->rwlock_writewchan);
 
 	kfree(rwlock->rwlock_name);
 	kfree(rwlock);
@@ -372,41 +377,58 @@ rwlock_destroy(struct rwlock *rwlock)
 void 
 rwlock_acquire_read(struct rwlock *rwlock)
 {
-	if (!rwlock->writing) {
-		//read
-		rwlock->reading++;
+	spinlock_acquire(&rwlock->rwlock_lock);
+
+	// if writing currently, wait.
+	// else aquire read.
+	if (rwlock->write_count != 0 || 
+		!wchan_isempty(rwlock->rwlock_writewchan, &rwlock->rwlock_lock)) {
+		wchan_sleep(rwlock->rwlock_readwchan, &rwlock->rwlock_lock);
 	}
-	else {
-		// same comment as below?
-		cv_wait(rwlock->rwlock_cv, rwlock->rwlock_thread);
-	}
+	
+	rwlock->read_count++;
+
+	spinlock_release(&rwlock->rwlock_lock);
 }
 
 void
 rwlock_release_read(struct rwlock *rwlock)
 {
-	rwlock->reading--;
-	// Same comment as below?
-	cv_broadcast(rwlock->rwlock_cv, rwlock->rwlock_thread);
+	spinlock_acquire(&rwlock->rwlock_lock);
+
+	rwlock->read_count--;
+
+	if (rwlock->read_count == 0 &&
+		!wchan_isempty(rwlock->rwlock_writewchan, &rwlock->rwlock_lock)) {
+		wchan_wakeone(rwlock->rwlock_writewchan, &rwlock->rwlock_lock);
+	}	
+
+	spinlock_release(&rwlock->rwlock_lock);
 }
 	
 void 
 rwlock_acquire_write(struct rwlock *rwlock)
 {
-	if (rwlock->reading == 0) {
-		// Should this acquire the lock so nothing else can and release in release?
-		rwlock->writing = true;
-	}
-	else {
-		// Is this the correct way to be using cv_wait?
-		cv_wait(rwlock->rwlock_cv, rwlock->rwlock_thread);
-	}
+	spinlock_acquire(&rwlock->rwlock_lock);
+
+	// if reading or writing wait
+	// else aqurire write. 
+	if (rwlock->write_count != 0 || rwlock->read_count != 0) {
+		wchan_sleep(rwlock->rwlock_writewchan, &rwlock->rwlock_lock);
+	}	
+
+	rwlock->write_count++;
+	spinlock_release(&rwlock->rwlock_lock);
 }
 
 void
 rwlock_release_write(struct rwlock *rwlock)
 {	
-	// Should this be in a spin lock?
-	rwlock->writing = false;
-	cv_broadcast(rwlock->rwlock_cv, rwlock->rwlock_thread);
+	spinlock_acquire(&rwlock->rwlock_lock);
+
+	wchan_wakeall(rwlock->rwlock_readwchan, &rwlock->rwlock_lock);
+	wchan_wakeall(rwlock->rwlock_writewchan, &rwlock->rwlock_lock);
+	
+	rwlock->write_count--;
+	spinlock_release(&rwlock->rwlock_lock);
 }
