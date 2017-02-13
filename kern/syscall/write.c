@@ -2,7 +2,7 @@
 
 #include <types.h>
 #include <syscall.h>
-#include <kern/unistd.h>
+#include <lib.h>
 
 /*
  * read syscall 
@@ -15,7 +15,7 @@ sys_write(int32_t *retval, int fd, const void *buf, size_t nbytes)
 	(void)buf;
 	(void)nbytes;
 	
-	//kprintf("%s", (char*)buf);
+	kprintf("%s", (char*)buf);
 
 	return 0;
 }

@@ -38,6 +38,8 @@
 
 #include <spinlock.h>
 #include <limits.h>
+#include <synch.h>
+#include <vnode.h>
 
 struct addrspace;
 struct thread;

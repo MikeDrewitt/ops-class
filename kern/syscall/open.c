@@ -6,7 +6,8 @@
 #include <copyinout.h>
 #include <vfs.h>
 #include <current.h>
-
+#include <proc.h>
+#include <synch.h>
 #include <kern/errno.h>
 #include <kern/unistd.h>
 #include <kern/fcntl.h>
@@ -25,6 +26,7 @@ sys_open(int32_t *retval, const char *filename, int flags)
 
 	struct vnode *v;
 	struct file_tabel *file;
+
 
 	file = kmalloc(sizeof(*file));
 
@@ -54,19 +56,18 @@ sys_open(int32_t *retval, const char *filename, int flags)
 	 */
 	
 	int file_descriptor = 0; //position in the file table
-	while (curthread->t_proc->p_filetable != NULL) {
+	while (curthread->t_proc->p_filetabel[file_descriptor] != NULL) {
 		
-		*curthread->t_proc->p_filetable++;
 		file_descriptor++;
 	}
 
-	file->*ft_vnode = v;
-	file->&lock = lock_create("ft_lock");
+	file->ft_vnode = v;
+	file->ft_lock = lock_create("file_lock");
 	
 	file->flag = flags;
 	file->offset = 0;
 
-	curproc->p_filetable[file_descriptor] = file;
+	curproc->p_filetabel[file_descriptor] = file;
 	// if true then open worked
 	// supposed to return file handle or -1 
 	

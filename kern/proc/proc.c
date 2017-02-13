@@ -62,7 +62,11 @@ struct proc *
 proc_create(const char *name)
 {
 	struct proc *proc;
-
+	struct file_tabel *ft;
+	ft = kmalloc(sizeof(ft));
+	if(ft == NULL){
+		return NULL;
+	}
 	proc = kmalloc(sizeof(*proc));
 	if (proc == NULL) {
 		return NULL;
@@ -82,7 +86,7 @@ proc_create(const char *name)
 	/* VFS fields */
 	proc->p_cwd = NULL;
 
-	proc->p_filetable;
+	proc->p_filetabel = ft;
 
 	return proc;
 }
