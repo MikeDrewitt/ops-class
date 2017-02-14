@@ -48,9 +48,15 @@
 #include <current.h>
 #include <addrspace.h>
 #include <vnode.h>
+#include <vfs.h>
+#include <syscall.h>
 
+#include <kern/fcntl.h>
 /*
- * The process for the kernel; this holds all the kernel-only threads.
+ * The 	in_file->ft_vnode = in_file;
+	out_file->ft_vnode = out_file;	
+	err_file->ft_vnode = err_file;
+process for the kernel; this holds all the kernel-only threads.
  */
 struct proc *kproc;
 
@@ -228,11 +234,59 @@ proc_create_runprogram(const char *name)
 	// initialize consol
 	// set filetable to all NULL,
 	// all entries in 64 array.
-
 	int i;
 	for (i = 0; i < 64; i++) {
 		newproc->p_filetabel[i] = NULL;
 	} 
+
+	struct vnode *standin;
+	struct vnode *standout;
+	struct vnode *standerr;
+
+	struct file_tabel *in_file;
+	struct file_tabel *out_file;
+	struct file_tabel *err_file;
+	
+	in_file = kmalloc(sizeof(*in_file));
+	out_file = kmalloc(sizeof(*out_file));
+	err_file = kmalloc(sizeof(*err_file));	
+	
+	int in_result;
+	int out_result;
+	int err_result;
+
+	in_result = vfs_open((char *)"con:", O_RDONLY, 0, &standin);
+	out_result = vfs_open((char *)"con:", O_WRONLY, 0, &standout);
+	err_result = vfs_open((char *)"con:", O_WRONLY, 0, &standerr);
+
+//	kprintf("%d", in_result);
+
+	KASSERT(!in_result);
+	KASSERT(!out_result);
+	KASSERT(!err_result);
+
+//need to error check these results
+	in_file->ft_lock = lock_create("in_lock");
+	out_file->ft_lock = lock_create("out_lock");	
+	err_file->ft_lock = lock_create("err_lock");
+
+	in_file->flag = O_RDONLY;
+	out_file->flag = O_WRONLY;	
+	err_file->flag = O_WRONLY;
+
+	in_file->offset = 0;
+	out_file->offset = 0;	
+	err_file->offset = 0;
+
+	in_file->ft_vnode = standin;
+	out_file->ft_vnode = standout;	
+	err_file->ft_vnode = standerr;
+
+	newproc->p_filetabel[0] = in_file;
+	newproc->p_filetabel[1] = out_file;
+	newproc->p_filetabel[2] = err_file;
+
+
 
 
 	return newproc;
