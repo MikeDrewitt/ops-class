@@ -61,5 +61,6 @@ ssize_t sys_read(int32_t *retval, int fd, void *buf, size_t buflen);
 ssize_t sys_write(int32_t *retval, int fd, const void *buf, size_t nbytes);
 int sys_open(int32_t *retval, const char *filename, int flags);
 int sys___time(userptr_t user_seconds, userptr_t user_nanoseconds);
+void sys__exit(int errorcode);
 
 #endif /* _SYSCALL_H_ */

@@ -259,11 +259,12 @@ proc_create_runprogram(const char *name)
 	out_result = vfs_open((char *)"con:", O_WRONLY, 0, &standout);
 	err_result = vfs_open((char *)"con:", O_WRONLY, 0, &standerr);
 
-//	kprintf("%d", in_result);
+	// KASSERT(!in_result);
+	// KASSERT(!out_result);
+	// KASSERT(!err_result);
 
-	KASSERT(!in_result);
-	KASSERT(!out_result);
-	KASSERT(!err_result);
+	/*essentially voiding out the vars*/
+	if (in_result || out_result || err_result)
 
 //need to error check these results
 	in_file->ft_lock = lock_create("in_lock");
