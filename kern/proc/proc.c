@@ -50,6 +50,7 @@
 #include <vnode.h>
 #include <vfs.h>
 #include <syscall.h>
+#include <lib.h>
 
 #include <kern/fcntl.h>
 /*
@@ -254,22 +255,29 @@ proc_create_runprogram(const char *name)
 	int in_result;
 	int out_result;
 	int err_result;
+	
+	char con[10];
+	char con_literal[10] = "con:\0";
+	memcpy(con, con_literal, 10);
 
-	in_result = vfs_open((char *)"con:", O_RDONLY, 0, &standin);
-	out_result = vfs_open((char *)"con:", O_WRONLY, 0, &standout);
-	err_result = vfs_open((char *)"con:", O_WRONLY, 0, &standerr);
-
-//	kprintf("%d", in_result);
+	in_result = vfs_open(con, O_RDONLY, 0, &standin);
+	memcpy(con, con_literal, 10);
+	
+	out_result = vfs_open(con, O_WRONLY, 0, &standout);
+	memcpy(con, con_literal, 10);
+	err_result = vfs_open((char *)con, O_WRONLY, 0, &standerr);
 
 	KASSERT(!in_result);
+	
 	KASSERT(!out_result);
-	KASSERT(!err_result);
+	
+	KASSERT(!err_result);	
 
-//need to error check these results
 	in_file->ft_lock = lock_create("in_lock");
 	out_file->ft_lock = lock_create("out_lock");	
 	err_file->ft_lock = lock_create("err_lock");
 
+	
 	in_file->flag = O_RDONLY;
 	out_file->flag = O_WRONLY;	
 	err_file->flag = O_WRONLY;
@@ -282,13 +290,7 @@ proc_create_runprogram(const char *name)
 	out_file->ft_vnode = standout;	
 	err_file->ft_vnode = standerr;
 
-	newproc->p_filetabel[0] = in_file;
-	newproc->p_filetabel[1] = out_file;
-	newproc->p_filetabel[2] = err_file;
-
-
-
-
+	kprintf("finish proc");
 	return newproc;
 }
 
