@@ -18,12 +18,8 @@
  * read syscall 
  */
 ssize_t
-sys_write(int32_t *retval, int fd, const void *buf, size_t nbytes)
+sys_write(int fd, const void *buf, size_t nbytes, int32_t *retval)
 {
-	(void)retval;	
-	// (void)fd;	
-	// (void)buf;
-	// (void)nbytes;
 
 	/*
 	 * we need to write the stuff at buf into the file descriptor
@@ -31,24 +27,18 @@ sys_write(int32_t *retval, int fd, const void *buf, size_t nbytes)
 	 */
 	int result;
 
-	kprintf("made it to write\n");
-
+	// EBADF fd is not a valid file descriptor, or was not opened for writing 
 	if (curthread->t_proc->p_filetabel[fd] == NULL) {
-		// retval = EBADF;
-		kprintf("file desc. is bad\n");
-		return -1;
+		*retval = -1;
+		return EBADF;
 	}
 
 	
 	struct iovec iov;
 	struct uio u;	
 
-	char buf_copy[64];
-	copyinstr((const_userptr_t)buf, buf_copy, 64, 0);
 
-	kprintf("%s\n", buf_copy);
-
-	iov.iov_ubase = (userptr_t)buf_copy;
+	iov.iov_ubase = (userptr_t)buf;
 	iov.iov_len = nbytes;
 	u.uio_iov = &iov;
 	u.uio_iovcnt = 1;
@@ -60,9 +50,14 @@ sys_write(int32_t *retval, int fd, const void *buf, size_t nbytes)
 
 	result = VOP_WRITE(curthread->t_proc->p_filetabel[fd]->ft_vnode, &u);
 
-	kprintf("flag:%d\n", curthread->t_proc->p_filetabel[fd]->flag);
-	kprintf("file_desc:%d\n", fd);
-	kprintf("result:%d\n", result);
-
-	return result ? (size_t)-1 : nbytes;	
+	kprintf("VOP_WRITE = %d \n", result);
+	if(result){
+		*retval = -1;
+		return EIO;
+	}
+// u.uio_resid is updated based on how many bites are written during 
+// VOP_write
+	kprintf("len: %d  resid: %d \n", nbytes, u.uio_resid);
+	*retval = nbytes - u.uio_resid;
+	return 0;
 }

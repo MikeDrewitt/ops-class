@@ -33,7 +33,6 @@ sys_open(int32_t *retval, const char *filename, int flags)
 	// (void)filename;
 	// (void)flags;
 
-	kprintf("hullo");
 	struct vnode *v;
 	struct file_tabel *file;
 

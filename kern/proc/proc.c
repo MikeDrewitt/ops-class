@@ -296,7 +296,6 @@ proc_create_runprogram(const char *name)
 	newproc->p_filetabel[2] = err_file;
 
 
-	kprintf("finished proc\n");
 	return newproc;
 }
 

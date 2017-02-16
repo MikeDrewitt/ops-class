@@ -113,7 +113,7 @@ syscall(struct trapframe *tf)
 		break;
 
 		case SYS_write:
-		err = sys_write(&retval, (int)tf->tf_a0, (const void *)tf->tf_a1, (size_t)tf->tf_a2);
+		err = sys_write((int)tf->tf_a0, (const void *)tf->tf_a1, (size_t)tf->tf_a2, &retval);
 		break;
 
 		case SYS___time:
