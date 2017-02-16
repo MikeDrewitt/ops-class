@@ -267,16 +267,13 @@ proc_create_runprogram(const char *name)
 	memcpy(con, con_literal, 10);
 	err_result = vfs_open((char *)con, O_WRONLY, 0, &standerr);
 
-	KASSERT(!in_result);
-	
+	KASSERT(!in_result);	
 	KASSERT(!out_result);
-	
 	KASSERT(!err_result);	
 
 	in_file->ft_lock = lock_create("in_lock");
 	out_file->ft_lock = lock_create("out_lock");	
 	err_file->ft_lock = lock_create("err_lock");
-
 	
 	in_file->flag = O_RDONLY;
 	out_file->flag = O_WRONLY;	
