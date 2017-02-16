@@ -237,7 +237,7 @@ proc_create_runprogram(const char *name)
 	// all entries in 64 array.
 	int i;
 	for (i = 0; i < 64; i++) {
-		newproc->p_filetabel[i] = NULL;
+		newproc->p_filetabel[i] = 0;
 	} 
 
 	struct vnode *standin;
@@ -252,25 +252,6 @@ proc_create_runprogram(const char *name)
 	out_file = kmalloc(sizeof(*out_file));
 	err_file = kmalloc(sizeof(*err_file));	
 	
-	int in_result;
-	int out_result;
-	int err_result;
-	
-	char con[10];
-	char con_literal[10] = "con:\0";
-	memcpy(con, con_literal, 10);
-
-	in_result = vfs_open(con, O_RDONLY, 0, &standin);
-	memcpy(con, con_literal, 10);
-	
-	out_result = vfs_open(con, O_WRONLY, 0, &standout);
-	memcpy(con, con_literal, 10);
-	err_result = vfs_open((char *)con, O_WRONLY, 0, &standerr);
-
-	KASSERT(!in_result);	
-	KASSERT(!out_result);
-	KASSERT(!err_result);	
-
 	in_file->ft_lock = lock_create("in_lock");
 	out_file->ft_lock = lock_create("out_lock");	
 	err_file->ft_lock = lock_create("err_lock");
@@ -283,11 +264,39 @@ proc_create_runprogram(const char *name)
 	out_file->offset = 0;	
 	err_file->offset = 0;
 
+	int in_result;
+	int out_result;
+	int err_result;
+	
+	char *test = NULL;
+
+	test = kstrdup("con:");	
+	in_result = vfs_open(test, O_RDONLY, 0664, &standin);
+	kfree(test);
+
+	test = kstrdup("con:");
+	out_result = vfs_open(test, O_WRONLY, 0664, &standout);
+	kfree(test);
+
+	test = kstrdup("con:");
+	err_result = vfs_open(test, O_WRONLY, 0664, &standerr);
+	
+	kfree(test);
+
+	KASSERT(!in_result);	
+	KASSERT(!out_result);
+	KASSERT(!err_result);	
+
 	in_file->ft_vnode = standin;
 	out_file->ft_vnode = standout;	
 	err_file->ft_vnode = standerr;
 
-	kprintf("finish proc");
+	newproc->p_filetabel[0] = in_file;
+	newproc->p_filetabel[1] = out_file;
+	newproc->p_filetabel[2] = err_file;
+
+
+	kprintf("finished proc\n");
 	return newproc;
 }
 

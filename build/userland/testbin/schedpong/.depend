@@ -81,6 +81,7 @@ $(MYBUILDDIR)/usem.o: \
  $(INSTALLTOP)/include/types/size_t.h \
  $(INSTALLTOP)/include/sys/null.h \
  $(INSTALLTOP)/include/stdarg.h \
+ $(INSTALLTOP)/include/string.h \
  $(INSTALLTOP)/include/unistd.h \
  $(INSTALLTOP)/include/sys/cdefs.h \
  $(INSTALLTOP)/include/sys/types.h \
