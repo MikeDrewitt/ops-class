@@ -94,7 +94,7 @@ main(int argc, char **argv)
 
     target = (i + 1) * 2 * sizeof(writebuf);
     pos = lseek(fh, sizeof(writebuf), SEEK_END);
-    if (pos != target) {
+	if (pos != target) {
       err(1, "(even) lseek failed: %llu != %llu", pos, target);
     }
   }
