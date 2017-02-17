@@ -108,12 +108,16 @@ syscall(struct trapframe *tf)
 		err = sys_open(&retval, (const char *)tf->tf_a0, (int)tf->tf_a1);
 		break;
 
+		case SYS_close:
+		err = sys_close(&retval, (int)tf->tf_a0);
+		break;
+
 		case SYS_read:
 		err = sys_read(&retval, (int)tf->tf_a0, (void *)tf->tf_a1, (size_t)tf->tf_a2);
 		break;
 
 		case SYS_write:
-		err = sys_write(&retval, (int)tf->tf_a0, (const void *)tf->tf_a1, (size_t)tf->tf_a2);
+		err = sys_write((int)tf->tf_a0, (const void *)tf->tf_a1, (size_t)tf->tf_a2, &retval);
 		break;
 
 		case SYS___time:
@@ -123,7 +127,7 @@ syscall(struct trapframe *tf)
 
 		case SYS__exit:
 		/* Not sure what to assign err to here, so I just zero it out  */
-		sys__exit((int) tf->tf_a0);
+		sys__exit(&retval, (int) tf->tf_a0);
 		err = 0;
 		break;
 			

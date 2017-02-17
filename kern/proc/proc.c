@@ -50,6 +50,7 @@
 #include <vnode.h>
 #include <vfs.h>
 #include <syscall.h>
+#include <lib.h>
 
 #include <kern/fcntl.h>
 /*
@@ -236,7 +237,7 @@ proc_create_runprogram(const char *name)
 	// all entries in 64 array.
 	int i;
 	for (i = 0; i < 64; i++) {
-		newproc->p_filetabel[i] = NULL;
+		newproc->p_filetabel[i] = 0;
 	} 
 
 	struct vnode *standin;
@@ -251,26 +252,10 @@ proc_create_runprogram(const char *name)
 	out_file = kmalloc(sizeof(*out_file));
 	err_file = kmalloc(sizeof(*err_file));	
 	
-	int in_result;
-	int out_result;
-	int err_result;
-
-	in_result = vfs_open((char *)"con:", O_RDONLY, 0, &standin);
-	out_result = vfs_open((char *)"con:", O_WRONLY, 0, &standout);
-	err_result = vfs_open((char *)"con:", O_WRONLY, 0, &standerr);
-
-	// KASSERT(!in_result);
-	// KASSERT(!out_result);
-	// KASSERT(!err_result);
-
-	/*essentially voiding out the vars*/
-	if (in_result || out_result || err_result)
-
-//need to error check these results
 	in_file->ft_lock = lock_create("in_lock");
 	out_file->ft_lock = lock_create("out_lock");	
 	err_file->ft_lock = lock_create("err_lock");
-
+	
 	in_file->flag = O_RDONLY;
 	out_file->flag = O_WRONLY;	
 	err_file->flag = O_WRONLY;
@@ -279,6 +264,29 @@ proc_create_runprogram(const char *name)
 	out_file->offset = 0;	
 	err_file->offset = 0;
 
+	int in_result;
+	int out_result;
+	int err_result;
+	
+	char *test = NULL;
+
+	test = kstrdup("con:");	
+	in_result = vfs_open(test, O_RDONLY, 0664, &standin);
+	kfree(test);
+
+	test = kstrdup("con:");
+	out_result = vfs_open(test, O_WRONLY, 0664, &standout);
+	kfree(test);
+
+	test = kstrdup("con:");
+	err_result = vfs_open(test, O_WRONLY, 0664, &standerr);
+	
+	kfree(test);
+
+	KASSERT(!in_result);	
+	KASSERT(!out_result);
+	KASSERT(!err_result);	
+
 	in_file->ft_vnode = standin;
 	out_file->ft_vnode = standout;	
 	err_file->ft_vnode = standerr;
@@ -286,8 +294,6 @@ proc_create_runprogram(const char *name)
 	newproc->p_filetabel[0] = in_file;
 	newproc->p_filetabel[1] = out_file;
 	newproc->p_filetabel[2] = err_file;
-
-
 
 
 	return newproc;

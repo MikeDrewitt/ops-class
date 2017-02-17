@@ -2,20 +2,60 @@
 
 #include <types.h>
 #include <syscall.h>
+#include <current.h>
+#include <proc.h>
 #include <lib.h>
+#include <uio.h>
+#include <proc.h>
+#include <addrspace.h>
+#include <vnode.h>
+#include <elf.h>
+#include <copyinout.h>
+
+#include <kern/errno.h>
 
 /*
  * read syscall 
  */
 ssize_t
-sys_write(int32_t *retval, int fd, const void *buf, size_t nbytes)
+sys_write(int fd, const void *buf, size_t nbytes, int32_t *retval)
 {
-	(void)retval;	
-	(void)fd;	
-	(void)buf;
-	(void)nbytes;
-	
-	kprintf("%s", (char*)buf);
 
+	/*
+	 * we need to write the stuff at buf into the file descriptor
+	 * that is passed in as fd. 
+	 */
+	int result;
+
+	// EBADF fd is not a valid file descriptor, or was not opened for writing 
+	if (curthread->t_proc->p_filetabel[fd] == NULL) {
+		*retval = -1;
+		return EBADF;
+	}
+
+	
+	struct iovec iov;
+	struct uio u;	
+
+
+	iov.iov_ubase = (userptr_t)buf;
+	iov.iov_len = nbytes;
+	u.uio_iov = &iov;
+	u.uio_iovcnt = 1;
+	u.uio_resid = nbytes;
+	u.uio_offset = curthread->t_proc->p_filetabel[fd]->offset;
+	u.uio_segflg = UIO_USERSPACE;
+	u.uio_rw = UIO_WRITE;
+	u.uio_space = curthread->t_proc->p_addrspace;//doesnt seem right
+
+	result = VOP_WRITE(curthread->t_proc->p_filetabel[fd]->ft_vnode, &u);
+
+	if(result){
+		*retval = -1;
+		return EIO;
+	}
+// u.uio_resid is updated based on how many bites are written during 
+// VOP_write
+	*retval = nbytes - u.uio_resid;
 	return 0;
 }

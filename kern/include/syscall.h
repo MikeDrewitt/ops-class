@@ -58,9 +58,10 @@ __DEAD void enter_new_process(int argc, userptr_t argv, userptr_t env,
 
 int sys_reboot(int code);
 ssize_t sys_read(int32_t *retval, int fd, void *buf, size_t buflen);
-ssize_t sys_write(int32_t *retval, int fd, const void *buf, size_t nbytes);
+ssize_t sys_write(int fd, const void *buf, size_t nbytes, int32_t *retval);
 int sys_open(int32_t *retval, const char *filename, int flags);
+int sys_close(int32_t *retval, int fd);
 int sys___time(userptr_t user_seconds, userptr_t user_nanoseconds);
-void sys__exit(int errorcode);
+void sys__exit(int32_t *retval, int errorcode);
 
 #endif /* _SYSCALL_H_ */

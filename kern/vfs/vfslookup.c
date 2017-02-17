@@ -292,6 +292,7 @@ vfs_lookup(char *path, struct vnode **retval)
 		return 0;
 	}
 
+	
 	result = VOP_LOOKUP(startvn, path, retval);
 
 	VOP_DECREF(startvn);
