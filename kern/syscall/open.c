@@ -38,7 +38,6 @@ sys_open(int32_t *retval, const char *filename, int flags)
 
 	file = kmalloc(sizeof(*file));
 
-/*
 	if (filename == NULL) {
 		*retval = -1;
 		return EFAULT;
@@ -48,7 +47,7 @@ sys_open(int32_t *retval, const char *filename, int flags)
 		*retval = -1;
 		return EINVAL;
 	}
-*/	
+	
 	file->ft_lock = lock_create("file_lock");
 	
 	file->flag = flags;
@@ -60,12 +59,12 @@ sys_open(int32_t *retval, const char *filename, int flags)
 
 	copyinstr((const_userptr_t)filename, name_copy, 128, 0);
 	result = vfs_open(name_copy, flags, 0664, &v);		
-/*
+
 	if (result) {
 		*retval = -1;
 		return EIO;
 	}
-*/ (void)result;
+
 	int file_descriptor = 0; //position in the file table
 	while (curthread->t_proc->p_filetabel[file_descriptor] != NULL) {	
 		file_descriptor++;
@@ -75,6 +74,5 @@ sys_open(int32_t *retval, const char *filename, int flags)
 	curthread->t_proc->p_filetabel[file_descriptor] = file;
 
 	*retval = file_descriptor;
-	kprintf("file desc: %d\n", file_descriptor);
 	return 0;
 }
