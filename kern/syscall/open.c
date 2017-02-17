@@ -42,12 +42,12 @@ sys_open(int32_t *retval, const char *filename, int flags)
 		*retval = -1;
 		return EFAULT;
 	}
-
+/*
 	if (flags != O_RDONLY && flags != O_WRONLY && flags != O_RDWR) {
 		*retval = -1;
 		return EINVAL;
 	}
-	
+*/	
 	file->ft_lock = lock_create("file_lock");
 	
 	file->flag = flags;
