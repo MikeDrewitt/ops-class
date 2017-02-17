@@ -29,59 +29,52 @@
 int
 sys_open(int32_t *retval, const char *filename, int flags)
 {
-	(void)retval;
+	// (void)retval;
 	// (void)filename;
 	// (void)flags;
 
 	struct vnode *v;
 	struct file_tabel *file;
 
-
 	file = kmalloc(sizeof(*file));
 
-	int result;
-
+/*
 	if (filename == NULL) {
-		//retval = (int32_t)EFAULT;
-		return -1;
+		*retval = -1;
+		return EFAULT;
 	}
 
 	if (flags != O_RDONLY && flags != O_WRONLY && flags != O_RDWR) {
-		//retval = EINVAL;
-		return -1;
+		*retval = -1;
+		return EINVAL;
 	}
+*/	
+	file->ft_lock = lock_create("file_lock");
+	
+	file->flag = flags;
+	file->offset = 0;
 
+	int result;
 	char name_copy[128];
 
+
 	copyinstr((const_userptr_t)filename, name_copy, 128, 0);
-	result = vfs_open(name_copy, flags, 0, &v);		
-
-	
-	/*
-	 * do actual logic for after open here such as finding a spot to open into
-	 * increment the file handler
-	 *
-	 * iterate over filetable and return a new value that will be the file handle
-	 */
-	
-	if (!result) {
-
-		int file_descriptor = 0; //position in the file table
-		while (curthread->t_proc->p_filetabel[file_descriptor] != NULL) {	
-			file_descriptor++;
-		}//run out of space? 
-
-		file->ft_vnode = v;
-		file->ft_lock = lock_create("file_lock");
-	
-		file->flag = flags;
-		file->offset = 0;
-
-		curthread->t_proc->p_filetabel[file_descriptor] = file;
-		// if true then open worked
-		// supposed to return file handle or -1 
-	
-		return file_descriptor;
+	result = vfs_open(name_copy, flags, 0664, &v);		
+/*
+	if (result) {
+		*retval = -1;
+		return EIO;
 	}
-	return -1;
+*/ (void)result;
+	int file_descriptor = 0; //position in the file table
+	while (curthread->t_proc->p_filetabel[file_descriptor] != NULL) {	
+		file_descriptor++;
+	}//run out of space? 
+
+	file->ft_vnode = v;
+	curthread->t_proc->p_filetabel[file_descriptor] = file;
+
+	*retval = file_descriptor;
+	kprintf("file desc: %d\n", file_descriptor);
+	return 0;
 }

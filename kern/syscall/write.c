@@ -50,14 +50,12 @@ sys_write(int fd, const void *buf, size_t nbytes, int32_t *retval)
 
 	result = VOP_WRITE(curthread->t_proc->p_filetabel[fd]->ft_vnode, &u);
 
-	kprintf("VOP_WRITE = %d \n", result);
 	if(result){
 		*retval = -1;
 		return EIO;
 	}
 // u.uio_resid is updated based on how many bites are written during 
 // VOP_write
-	kprintf("len: %d  resid: %d \n", nbytes, u.uio_resid);
 	*retval = nbytes - u.uio_resid;
 	return 0;
 }
