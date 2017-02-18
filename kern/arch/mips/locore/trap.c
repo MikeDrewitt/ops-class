@@ -40,7 +40,6 @@
 #include <mainbus.h>
 #include <syscall.h>
 
-
 /* in exception-*.S */
 extern __DEAD void asm_usermode(struct trapframe *tf);
 
@@ -74,6 +73,7 @@ void
 kill_curthread(vaddr_t epc, unsigned code, vaddr_t vaddr)
 {
 	int sig = 0;
+
 
 	KASSERT(code < NTRAPCODES);
 	switch (code) {
@@ -132,6 +132,8 @@ mips_trap(struct trapframe *tf)
 
 	/* The trap frame is supposed to be 35 registers long. */
 	KASSERT(sizeof(struct trapframe)==(35*4));
+
+	// kprintf("v1: %d", tf->tf_v1);
 
 	/*
 	 * Extract the exception code info from the register fields.

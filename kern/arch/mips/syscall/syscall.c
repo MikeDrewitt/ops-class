@@ -28,14 +28,15 @@
  */
 
 #include <types.h>
-#include <kern/errno.h>
-#include <kern/syscall.h>
 #include <lib.h>
-#include <mips/trapframe.h>
 #include <thread.h>
 #include <current.h>
 #include <syscall.h>
+#include <copyinout.h>
 
+#include <kern/errno.h>
+#include <kern/syscall.h>
+#include <mips/trapframe.h>
 
 /*
  * System call dispatcher.
@@ -81,6 +82,10 @@ syscall(struct trapframe *tf)
 	int callno;
 	int32_t retval;
 	int err;
+	
+	int64_t retval_long;
+	uint64_t  full_pos;
+	int seek = 0;
 
 	KASSERT(curthread != NULL);
 	KASSERT(curthread->t_curspl == 0);
@@ -101,32 +106,41 @@ syscall(struct trapframe *tf)
 
 	switch (callno) {
 	    case SYS_reboot:
-		err = sys_reboot(tf->tf_a0);
+			err = sys_reboot(tf->tf_a0);
 		break;
 
 		case SYS_open:
-		err = sys_open(&retval, (const char *)tf->tf_a0, (int)tf->tf_a1);
+			err = sys_open(&retval, (const char *)tf->tf_a0, (int)tf->tf_a1);
 		break;
 
 		case SYS_close:
-		err = sys_close(&retval, (int)tf->tf_a0);
+			err = sys_close(&retval, (int)tf->tf_a0);
 		break;
 
 		case SYS_read:
-		err = sys_read(&retval, (int)tf->tf_a0, (void *)tf->tf_a1, (size_t)tf->tf_a2);
+			err = sys_read(&retval, (int)tf->tf_a0, (void *)tf->tf_a1, (size_t)tf->tf_a2);
 		break;
 
 		case SYS_write:
-		err = sys_write((int)tf->tf_a0, (const void *)tf->tf_a1, (size_t)tf->tf_a2, &retval);
+			err = sys_write((int)tf->tf_a0, (const void *)tf->tf_a1, (size_t)tf->tf_a2, &retval);
 		break;
 
 		case SYS___time:
-		err = sys___time((userptr_t)tf->tf_a0,
+			err = sys___time((userptr_t)tf->tf_a0,
 				 (userptr_t)tf->tf_a1);
 		break;
 
 	    case SYS_lseek:
-		err = sys_lseek(&retval ,(int)tf->tf_a0, (off_t)tf->tf_a1, (int)tf->tf_a2);
+			full_pos = tf->tf_a2;
+			full_pos = full_pos << 32;
+			full_pos += tf->tf_a3;
+
+			int whence;
+			copyin((userptr_t)tf->tf_sp+16, &whence, 32);
+			err = sys_lseek(&retval_long ,(int)tf->tf_a0, (off_t)full_pos, (int)whence);
+
+			seek = 1;
+
 		break;
 		/* Add stuff here */
 
@@ -148,7 +162,14 @@ syscall(struct trapframe *tf)
 	}
 	else {
 		/* Success. */
-		tf->tf_v0 = retval;
+		if (seek) {
+			kprintf("ret_long: %lld\n", retval_long);
+			tf->tf_v1 = retval_long; // hopefully this grabs bottom 32
+			tf->tf_v0 = retval_long >> 32; // and this grabs top 32
+		}
+		else {
+			tf->tf_v0 = retval;
+		} 		
 		tf->tf_a3 = 0;      /* signal no error */
 	}
 
@@ -158,6 +179,7 @@ syscall(struct trapframe *tf)
 	 */
 
 	tf->tf_epc += 4;
+	(void)seek;
 
 	/* Make sure the syscall code didn't forget to lower spl */
 	KASSERT(curthread->t_curspl == 0);

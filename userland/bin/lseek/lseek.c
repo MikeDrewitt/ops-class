@@ -27,41 +27,18 @@
  * SUCH DAMAGE.
  */
 
-#ifndef _SYSCALL_H_
-#define _SYSCALL_H_
-
-
-#include <cdefs.h> /* for __DEAD */
-struct trapframe; /* from <machine/trapframe.h> */
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 /*
- * The system call dispatcher.
+ * true - succeed.
  */
 
-void syscall(struct trapframe *tf);
+int
+main(void)
+{
+	printf("Hullo??");
 
-/*
- * Support functions.
- */
-
-/* Helper for fork(). You write this. */
-void enter_forked_process(struct trapframe *tf);
-
-/* Enter user mode. Does not return. */
-__DEAD void enter_new_process(int argc, userptr_t argv, userptr_t env,
-		       vaddr_t stackptr, vaddr_t entrypoint);
-
-
-/*
- * Prototypes for IN-KERNEL entry points for system call implementations.
- */
-
-int sys_reboot(int code);
-ssize_t sys_read(int32_t *retval, int fd, void *buf, size_t buflen);
-ssize_t sys_write(int fd, const void *buf, size_t nbytes, int32_t *retval);
-int sys_open(int32_t *retval, const char *filename, int flags);
-int sys_close(int32_t *retval, int fd);
-int sys___time(userptr_t user_seconds, userptr_t user_nanoseconds);
-off_t sys_lseek(int64_t *retval, int fd, off_t pos, int whence);
-
-#endif /* _SYSCALL_H_ */
+	exit(0);
+}

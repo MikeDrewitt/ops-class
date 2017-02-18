@@ -11,7 +11,7 @@
 #include <kern/errno.h>
 
 off_t 
-sys_lseek(int32_t *retval, int fd, off_t pos, int whence)
+sys_lseek(int64_t *retval, int fd, off_t pos, int whence)
 {
 	/*
 	 *	update the offset position based on the whence 
@@ -30,16 +30,37 @@ sys_lseek(int32_t *retval, int fd, off_t pos, int whence)
 	struct stat statbuf;
 	
 	int result;
-	result = vop_stat(curthread->t_proc->p_filetabel[fd]->ft_vnode, statbuf);
+	result = VOP_STAT(curthread->t_proc->p_filetabel[fd]->ft_vnode, &statbuf);
 
 	(void)result;
-	
-	if (whence == SEEK_SET) curthread->t_proc->p_filetabel[fd]->offset = pos;
-	else if (whence == SEEK_CUR) curthread->t_proc->p_filetabel[fd]->offset += pos;	
-	else if (whence == SEEK_END) curthread->t_proc->p_filetabel[fd]->offset = statbuf->st_size + pos;
-	else {
-		*retval = -1;
-		return EINVAL;
+
+	kprintf("pos: %lld\n", pos);
+	kprintf("whence: %d\n", whence);
+	kprintf("offset: %d\n", curthread->t_proc->p_filetabel[fd]->offset);
+
+	if (whence == SEEK_SET) {
+		curthread->t_proc->p_filetabel[fd]->offset = pos;
+
+		*retval = curthread->t_proc->p_filetabel[fd]->offset;
+		return 0;
 	}
-	return 0;
+	else if (whence == SEEK_CUR) {
+		curthread->t_proc->p_filetabel[fd]->offset += pos;
+
+		*retval = curthread->t_proc->p_filetabel[fd]->offset;
+		return 0;
+	}
+	else if (whence == SEEK_END) {
+		curthread->t_proc->p_filetabel[fd]->offset = statbuf.st_size + pos;
+		
+		kprintf("stat_size: %llu\n", statbuf.st_size);
+		kprintf("new_pos: %u\n", curthread->t_proc->p_filetabel[fd]->offset);
+
+		*retval = curthread->t_proc->p_filetabel[fd]->offset;
+		return 0; 
+
+	}
+	
+	*retval = -1;
+	return EINVAL;
 }

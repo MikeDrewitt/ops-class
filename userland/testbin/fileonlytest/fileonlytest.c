@@ -92,8 +92,14 @@ main(int argc, char **argv)
 
     // 23 Mar 2012 : GWA : Use lseek() to skip the odd guys.
 
+	printf("writebuf: %u\n", sizeof(writebuf));
+
     target = (i + 1) * 2 * sizeof(writebuf);
     pos = lseek(fh, sizeof(writebuf), SEEK_END);
+	
+	printf("target: %lld\n", target);
+	printf("pos: %lld\n", pos);
+
 	if (pos != target) {
       err(1, "(even) lseek failed: %llu != %llu", pos, target);
     }
