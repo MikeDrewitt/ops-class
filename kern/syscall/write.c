@@ -28,22 +28,20 @@ sys_write(int fd, const void *buf, size_t nbytes, int32_t *retval)
 	int result;
 
 	// EBADF fd is not a valid file descriptor, or was not opened for writing 
-	if (curthread->t_proc->p_filetabel[fd] == NULL) {
+	if (curproc->p_filetabel[fd] == NULL) {
 		*retval = -1;
 		return EBADF;
 	}
 
-	
 	struct iovec iov;
 	struct uio u;	
-
 
 	iov.iov_ubase = (userptr_t)buf;
 	iov.iov_len = nbytes;
 	u.uio_iov = &iov;
 	u.uio_iovcnt = 1;
 	u.uio_resid = nbytes;
-	u.uio_offset = curthread->t_proc->p_filetabel[fd]->offset;
+	u.uio_offset = curproc->p_filetabel[fd]->offset;
 	u.uio_segflg = UIO_USERSPACE;
 	u.uio_rw = UIO_WRITE;
 	u.uio_space = curthread->t_proc->p_addrspace;//doesnt seem right
@@ -57,5 +55,6 @@ sys_write(int fd, const void *buf, size_t nbytes, int32_t *retval)
 // u.uio_resid is updated based on how many bites are written during 
 // VOP_write
 	*retval = nbytes - u.uio_resid;
+	curproc->p_filetabel[fd]->offset += nbytes - u.uio_resid;
 	return 0;
 }

@@ -80,8 +80,8 @@ main(int argc, char **argv)
 
   // 23 Mar 2012 : GWA : Do the even-numbered writes. Test read() and
   // lseek(SEEK_END).
-
-  for (i = 0; i < BUFFER_COUNT / 2; i++) {
+  
+	for (i = 0; i < BUFFER_COUNT / 2; i++) {
 		for (j = 0; j < BUFFER_SIZE; j++) {
 			writebuf[j] = i * 2 * j;
 		}
@@ -92,13 +92,11 @@ main(int argc, char **argv)
 
     // 23 Mar 2012 : GWA : Use lseek() to skip the odd guys.
 
-	printf("writebuf: %u\n", sizeof(writebuf));
-
     target = (i + 1) * 2 * sizeof(writebuf);
-    pos = lseek(fh, sizeof(writebuf), SEEK_END);
-	
-	printf("target: %lld\n", target);
-	printf("pos: %lld\n", pos);
+	// printf("correct_answer: %lld\n", target);
+    
+	pos = lseek(fh, sizeof(writebuf), SEEK_END);
+	// printf("our_answer: %lld\n", pos);
 
 	if (pos != target) {
       err(1, "(even) lseek failed: %llu != %llu", pos, target);
@@ -106,27 +104,35 @@ main(int argc, char **argv)
   }
 
   target = 0;
+  // printf("correct_answer: %lld\n", target);
+  
   pos = lseek(fh, target, SEEK_SET);
+  // printf("our_answer: %lld\n", pos);
+
   if (pos != target) {
     err(1, "(reset) lseek failed: %llu != %llu", pos, target);
   }
 
   // 23 Mar 2012 : GWA : Do the odd-numbered writes. Test write() and
   // lseek(SEEK_CUR).
-
+  
   for (i = 0; i < BUFFER_COUNT / 2; i++) {
 
     // 23 Mar 2012 : GWA : Use lseek() to skip the even guys.
 
     target = ((i * 2) + 1) * sizeof(writebuf);
+	// printf("correct_answer: %lld\n", target);
     pos = lseek(fh, sizeof(writebuf), SEEK_CUR);
-    if (pos != target) {
+	// printf("our_answer: %lld\n", pos);
+    
+	if (pos != target) {
       err(1, "(odd) lseek failed: %llu != %llu", pos, target);
     }
 
     for (j = 0; j < BUFFER_SIZE; j++) {
 			writebuf[j] = ((i * 2) + 1) * j;
 		}
+		
 		len = write(fh, writebuf, sizeof(writebuf));
 		if (len != sizeof(writebuf)) {
 			err(1, "write failed");
@@ -139,8 +145,13 @@ main(int argc, char **argv)
 	tprintf("Verifying write.\n");
 
 	for (i = BUFFER_COUNT - 1; i >= 0; i--) {
-    target = i * sizeof(writebuf);
+	
+		target = i * sizeof(writebuf);
+		// printf("correct_answer: %lld\n", target);
+		
 		pos = lseek(fh, target, SEEK_SET);
+		// printf("our_answer: %lld\n", pos);
+
     if (pos != target) {
       err(1, "(verify) lseek failed: %llu != %llu", pos, target);
     }

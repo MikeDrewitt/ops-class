@@ -299,6 +299,8 @@ mips_trap(struct trapframe *tf)
 	 * from the exception handler.
 	 */
 
+	// kprintf("curthread: %p\n", curthread);
+	// kprintf("machdep: %p\n", curthread->t_machdep.tm_badfaultfunc);
 	if (curthread != NULL &&
 	    curthread->t_machdep.tm_badfaultfunc != NULL) {
 		tf->tf_epc = (vaddr_t) curthread->t_machdep.tm_badfaultfunc;

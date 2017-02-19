@@ -84,7 +84,7 @@ syscall(struct trapframe *tf)
 	int err;
 	
 	int64_t retval_long;
-	uint64_t  full_pos;
+	int64_t  full_pos;
 	int seek = 0;
 
 	KASSERT(curthread != NULL);
@@ -136,9 +136,9 @@ syscall(struct trapframe *tf)
 			full_pos += tf->tf_a3;
 
 			int whence;
-			copyin((userptr_t)tf->tf_sp+16, &whence, 32);
-			err = sys_lseek(&retval_long ,(int)tf->tf_a0, (off_t)full_pos, (int)whence);
+			copyin((const_userptr_t)tf->tf_sp+16, &whence, sizeof(int));
 
+			err = sys_lseek(&retval_long ,(int)tf->tf_a0, (off_t)full_pos,(int) whence);	
 			seek = 1;
 
 		break;
@@ -163,9 +163,11 @@ syscall(struct trapframe *tf)
 	else {
 		/* Success. */
 		if (seek) {
-			kprintf("ret_long: %lld\n", retval_long);
-			tf->tf_v1 = retval_long; // hopefully this grabs bottom 32
-			tf->tf_v0 = retval_long >> 32; // and this grabs top 32
+			// kprintf("our_answer: %d\n", retval);
+			// tf->tf_v1 = retval & 0xFFFFFFFF; // hopefully this grabs bottom 32
+			// tf->tf_v0 = (retval & 0xFFFFFFFF00000000) >> 32; // and this grabs top 32
+			tf->tf_v1 = retval_long;
+			tf->tf_v0 = retval_long >> 32;
 		}
 		else {
 			tf->tf_v0 = retval;
@@ -185,6 +187,10 @@ syscall(struct trapframe *tf)
 	KASSERT(curthread->t_curspl == 0);
 	/* ...or leak any spinlocks */
 	KASSERT(curthread->t_iplhigh_count == 0);
+
+	// kprintf("v0: %lld\n", (long long int)tf->tf_v0);
+	// kprintf("v1: %lld\n", (long long int)tf->tf_v1);
+	// kprintf("finish syscall\n");
 }
 
 /*

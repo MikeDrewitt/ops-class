@@ -29,34 +29,30 @@ sys_lseek(int64_t *retval, int fd, off_t pos, int whence)
 
 	struct stat statbuf;
 	
-	int result;
-	result = VOP_STAT(curthread->t_proc->p_filetabel[fd]->ft_vnode, &statbuf);
+	VOP_STAT(curproc->p_filetabel[fd]->ft_vnode, &statbuf);
 
-	(void)result;
-
-	kprintf("pos: %lld\n", pos);
-	kprintf("whence: %d\n", whence);
-	kprintf("offset: %d\n", curthread->t_proc->p_filetabel[fd]->offset);
+	kprintf("/****************************/\n");
+	kprintf("fd: %d\n", fd);
+	kprintf("pos_lseek: %lld\n", pos);
+	kprintf("whence_lseek: %d\n", whence);
+	kprintf("offset_lseek: %d\n", curthread->t_proc->p_filetabel[fd]->offset);
+	kprintf("file_size: %lld\n", statbuf.st_size);
+	kprintf("SEEK: %d\n", whence);
+	kprintf("/****************************/\n");
 
 	if (whence == SEEK_SET) {
-		curthread->t_proc->p_filetabel[fd]->offset = pos;
-
+		curproc->p_filetabel[fd]->offset = pos;
 		*retval = curthread->t_proc->p_filetabel[fd]->offset;
 		return 0;
 	}
 	else if (whence == SEEK_CUR) {
-		curthread->t_proc->p_filetabel[fd]->offset += pos;
-
-		*retval = curthread->t_proc->p_filetabel[fd]->offset;
+		curproc->p_filetabel[fd]->offset += pos;
+		*retval = curproc->p_filetabel[fd]->offset;
 		return 0;
 	}
 	else if (whence == SEEK_END) {
-		curthread->t_proc->p_filetabel[fd]->offset = statbuf.st_size + pos;
-		
-		kprintf("stat_size: %llu\n", statbuf.st_size);
-		kprintf("new_pos: %u\n", curthread->t_proc->p_filetabel[fd]->offset);
-
-		*retval = curthread->t_proc->p_filetabel[fd]->offset;
+		curproc->p_filetabel[fd]->offset = statbuf.st_size + pos;
+		*retval = curproc->p_filetabel[fd]->offset;
 		return 0; 
 
 	}
