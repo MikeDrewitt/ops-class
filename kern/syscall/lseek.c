@@ -30,16 +30,16 @@ sys_lseek(int64_t *retval, int fd, off_t pos, int whence)
 	struct stat statbuf;
 	
 	VOP_STAT(curproc->p_filetabel[fd]->ft_vnode, &statbuf);
-
-	kprintf("/****************************/\n");
+/*
+	kprintf("#----------------------#\n");
 	kprintf("fd: %d\n", fd);
 	kprintf("pos_lseek: %lld\n", pos);
 	kprintf("whence_lseek: %d\n", whence);
 	kprintf("offset_lseek: %d\n", curthread->t_proc->p_filetabel[fd]->offset);
 	kprintf("file_size: %lld\n", statbuf.st_size);
 	kprintf("SEEK: %d\n", whence);
-	kprintf("/****************************/\n");
-
+	kprintf("#----------------------#\n");
+*/
 	if (whence == SEEK_SET) {
 		curproc->p_filetabel[fd]->offset = pos;
 		*retval = curthread->t_proc->p_filetabel[fd]->offset;
