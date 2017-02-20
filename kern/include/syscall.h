@@ -63,5 +63,6 @@ int sys_open(int32_t *retval, const char *filename, int flags);
 int sys_close(int32_t *retval, int fd);
 int sys___time(userptr_t user_seconds, userptr_t user_nanoseconds);
 off_t sys_lseek(int64_t *retval, int fd, off_t pos, int whence);
+pid_t sys_fork(int32_t *retval);
 
 #endif /* _SYSCALL_H_ */

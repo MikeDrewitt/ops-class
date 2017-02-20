@@ -33,6 +33,7 @@
 #include <current.h>
 #include <syscall.h>
 #include <copyinout.h>
+#include <proc.h>
 
 #include <kern/errno.h>
 #include <kern/syscall.h>
@@ -51,7 +52,7 @@
  * if the first argument is 32-bit and the second is 64-bit, a1 is
  * unused.
  *
- * This much is the same as the calling conventions for ordinary
+ * This much is the same as the calling convpid_t sys_fork();tions for ordinary
  * function calls. In addition, the system call number is passed in
  * the v0 register.
  *
@@ -86,10 +87,12 @@ syscall(struct trapframe *tf)
 	int64_t retval_long;
 	int64_t  full_pos;
 	int seek = 0;
-
+	
 	KASSERT(curthread != NULL);
 	KASSERT(curthread->t_curspl == 0);
 	KASSERT(curthread->t_iplhigh_count == 0);
+	
+	curproc->p_tf = tf;
 
 	callno = tf->tf_v0;
 
@@ -105,7 +108,11 @@ syscall(struct trapframe *tf)
 	retval = 0;
 
 	switch (callno) {
-	    case SYS_reboot:
+		case SYS_fork:
+			err = sys_fork(&retval);
+		break;
+
+		case SYS_reboot:
 			err = sys_reboot(tf->tf_a0);
 		break;
 
