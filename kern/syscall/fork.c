@@ -21,6 +21,9 @@ sys_fork(int32_t *retval) {
 	 * 
 	 */
 
+	// kprintf("curproc: %s\n", curproc->p_name);
+	// kprintf("0 index: %s\n", pid_table[0].p_name);
+
 	struct proc *child_proc;
 	child_proc = create_proc("child_proc");
 
@@ -39,7 +42,9 @@ sys_fork(int32_t *retval) {
 	child_proc->p_addrspace = child_addr;
 
 	//copy parent thread into parent
-	thread_fork("child_thread", child_proc,(void *)child_tf, (unsigned long *)child_addr, 0);
+	int err = thread_fork("child_thread", child_proc,(void *)child_tf, 0, 0);
+
+	kprintf("err: %d\n", err);
 
 	int i = 0;
 	while (i < 64) {
@@ -48,14 +53,13 @@ sys_fork(int32_t *retval) {
 	}
 
 	i = 0;
-	while (pid_table[i].p_addrspace != NULL) {
-		i++;
+	while (pid_table[i].p_name != NULL) {
+		i++; // probably will introduce bug if > 64 processes. 
 	}
 
 	pid_table[i] = *child_proc;
 	child_proc->pid = i;
-
-	kprintf("fork_end\n");
+	
 	return 0;
 }
 

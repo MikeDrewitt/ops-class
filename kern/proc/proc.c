@@ -301,6 +301,7 @@ proc_create_runprogram(const char *name)
 	newproc->p_filetabel[1] = out_file;
 	newproc->p_filetabel[2] = err_file;
 
+	pid_table[0] = *newproc;
 
 	return newproc;
 }
