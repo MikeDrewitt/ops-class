@@ -29,6 +29,7 @@
 
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 /*
  * true - succeed.
@@ -37,6 +38,9 @@
 int
 main(void)
 {
-	/* Just exit with success. */
-	exit(0);
+
+	int result = fork();
+
+	printf("result: %d", result);
+	return 0;
 }

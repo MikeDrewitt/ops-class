@@ -70,6 +70,8 @@ sys_fork(int32_t *retval) {
 */
 
 	child_tf = curproc->p_tf;
+	
+	// kprintf("cp: %d pp: %d\n", child_tf->tf_t3, curproc->p_tf->tf_t3);
 
 	//copy parent address space into child proc
 	as_copy(curproc->p_addrspace, &child_addr);
@@ -78,12 +80,19 @@ sys_fork(int32_t *retval) {
 	//copy parent thread into parent
 	thread_fork("child_thread", child_proc,(void *)child_tf, (unsigned long *)child_addr, 0);
 
-
-
-
-	if (child_proc == NULL) {
-		kprintf("null\n");
+	int i = 0;
+	while (i < 64) {
+		child_proc->p_filetabel[i] = curproc->p_filetabel[i];
+		i++;
 	}
+
+	i = 0;
+	while (pid_table[i].p_addrspace != NULL) {
+		i++;
+	}
+
+	pid_table[i] = *child_proc;
+	child_proc->pid = i;
 	
 	 return 0;
 }
