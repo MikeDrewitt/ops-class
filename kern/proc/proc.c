@@ -92,6 +92,12 @@ proc_create(const char *name)
 	return proc;
 }
 
+struct proc *
+create_proc(const char *name)
+{
+	return proc_create(name);
+}
+
 /*
  * Destroy a proc structure.
  *

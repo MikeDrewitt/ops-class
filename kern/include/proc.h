@@ -94,9 +94,11 @@ struct proc {
     struct trapframe *p_tf;
 };
 
-struct proc pid_table[__PID_MAX];
+struct proc pid_table[1024];
 /* This is the process structure for the kernel and for kernel-only threads. */
 extern struct proc *kproc;
+
+struct proc *create_proc(const char *name);
 
 /* Call once during system startup to allocate data structures. */
 void proc_bootstrap(void);
