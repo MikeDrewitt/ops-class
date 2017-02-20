@@ -38,9 +38,8 @@
 int
 main(void)
 {
-
 	int result = fork();
 
-	printf("result: %d", result);
+	//printf("result: %d", result);
 	return 0;
 }
