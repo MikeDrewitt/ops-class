@@ -1,4 +1,3 @@
-
 #include <types.h>
 #include <spl.h>
 #include <proc.h>
@@ -10,10 +9,27 @@
 #include <lib.h>
 
 #include <kern/fcntl.h>
+
+static 
+void
+fork_entry(void *data1, unsigned long *data2){
+	(struct trapframe)data1;
+	(struct addrspace)data2;
+	kprintf("in function pointer\n");
+	data1->tf_epc += 4;
+	data1->tf_v0 = 0;
+	data1->tf_a3 = 0;
+	as_activate();
+	mips_usermode(&data1);
+
+}
+
+
+
 pid_t 
 sys_fork(int32_t *retval) {
 	(void)retval;
-	
+	kprintf("in fork\n");	
 	/*
 	 * Create new proc and copy current 
 	 *
@@ -26,14 +42,18 @@ sys_fork(int32_t *retval) {
 
 	struct proc *child_proc;
 	child_proc = create_proc("child_proc");
-
+	
 	struct addrspace *child_addr;
 	struct trapframe *child_tf;
-	
+	child_tf = kmalloc(sizeof(struct trapframe));
+
 	//copys trap frame 
 	bzero(&child_proc->p_tf, sizeof(child_proc->p_tf));
+	memcpy(child_tf, curproc->p_tf, sizeof(struct trapframe));
+	child_proc->p_tf = child_tf;
+	
 
-	child_tf = curproc->p_tf;
+	//child_tf = curproc->p_tf;
 	
 	// kprintf("cp: %d pp: %d\n", child_tf->tf_t3, curproc->p_tf->tf_t3);
 
@@ -42,9 +62,14 @@ sys_fork(int32_t *retval) {
 	child_proc->p_addrspace = child_addr;
 
 	//copy parent thread into parent
-	int err = thread_fork("child_thread", child_proc,(void *)child_tf, 0, 0);
-
-	kprintf("err: %d\n", err);
+	(void *)child_tf;
+	(unsigned long *)child_addr;
+	(*entry)fork_entry(child_tf, child_addr);
+	kprintf("before thread fork\n");
+	int err = thread_fork("child_thread", child_proc,(void *)child_tf, child_tf, child_addr);
+	kprintf("after thread fork\n");
+	(void)err;
+	//kprintf("err: %d\n", err);
 
 	int i = 0;
 	while (i < 64) {
@@ -59,7 +84,6 @@ sys_fork(int32_t *retval) {
 
 	pid_table[i] = *child_proc;
 	child_proc->pid = i;
-	
-	return 0;
+	kprintf("%d\n",child_proc->pidi);
+	return child_proc->pid;
 }
-
