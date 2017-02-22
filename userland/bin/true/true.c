@@ -38,8 +38,18 @@
 int
 main(void)
 {
-	fork();
+	int res;
+	res = fork();
+	
+	if(res){
+		printf("im am the parent\n");
+
+	}
+	else{
+		printf("i am the child\n");
+	}
+
 
 	//printf("result: %d", result);
-	return 0;
+	exit(0);
 }

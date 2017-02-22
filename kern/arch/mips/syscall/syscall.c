@@ -107,7 +107,7 @@ syscall(struct trapframe *tf)
 
 	retval = 0;
 
-	kprintf("call to syscall %d\n", callno);
+	// kprintf("call to syscall %d\n", callno);
 
 	switch (callno) {
 		case SYS_fork:
