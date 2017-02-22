@@ -18,10 +18,9 @@ fork_entry(void *data1, unsigned long data2){
 	//curproc->p_tf->tf_a3 = 0;
 	//curproc->p_tf->tf_epc += 4;
 	
-	as_activate();
-	
+		
 	struct trapframe tf;
-
+/*
 	tf.tf_vaddr = curproc->p_tf->tf_vaddr;
 	tf.tf_status = curproc->p_tf->tf_status;
 	tf.tf_cause = curproc->p_tf->tf_cause;
@@ -55,11 +54,15 @@ fork_entry(void *data1, unsigned long data2){
 	tf.tf_gp = curproc->p_tf->tf_gp;
 	tf.tf_sp = curproc->p_tf->tf_sp;
 	tf.tf_s8 = curproc->p_tf->tf_s8;
+*/
+
+	memcpy(&tf, curproc->p_tf, sizeof(*curproc->p_tf));
 
 	tf.tf_v0 = 0;
 	tf.tf_a3 = 0;
 	tf.tf_epc += 4;
 
+	as_activate();
 	mips_usermode(&tf);
 
 	(void)data1;
@@ -71,7 +74,7 @@ fork_entry(void *data1, unsigned long data2){
 pid_t 
 sys_fork(int32_t *retval) {
 	(void)retval;
-	kprintf("in fork\n");	
+	// kprintf("in fork\n");	
 	/*
 	 * Create new proc and copy current 
 	 *

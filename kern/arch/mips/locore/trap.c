@@ -398,7 +398,7 @@ mips_usermode(struct trapframe *tf)
 	 * current thread's own stack. It cannot correctly be on
 	 * either another thread's stack or in the kernel heap.
 	 * (Exercise: why?)
-	 */
+	 */	
 	KASSERT(SAME_STACK(cpustacks[curcpu->c_number]-1, (vaddr_t)tf));
 
 	/*

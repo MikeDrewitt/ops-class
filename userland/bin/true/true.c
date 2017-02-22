@@ -38,15 +38,14 @@
 int
 main(void)
 {
-	int res;
-	res = fork();
+	int res = fork();
 	
-	if(res){
-		printf("im am the parent\n");
+	if (res) {
+		printf("parent\n");
 
 	}
-	else{
-		printf("i am the child\n");
+	else {
+		printf("child\n");
 	}
 
 
