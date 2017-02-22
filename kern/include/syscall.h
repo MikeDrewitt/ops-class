@@ -66,5 +66,6 @@ void sys__exit(int32_t *retval, int errorcode);
 off_t sys_lseek(int64_t *retval, int fd, off_t pos, int whence);
 pid_t sys_fork(int32_t *retval);
 pid_t sys_waitpid(int32_t *retval, pid_t pid, int *status, int options);
+pid_t sys_getpid(int32_t *retval);
 
 #endif /* _SYSCALL_H_ */
