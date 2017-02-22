@@ -13,8 +13,9 @@
 static 
 void
 fork_entry(void *data1, unsigned long *data2){
-	(struct trapframe)data1;
-	(struct addrspace)data2;
+//	(struct trapframe)data1;
+//	(struct addrspace)data2;
+	(void)data2;
 	kprintf("in function pointer\n");
 	data1->tf_epc += 4;
 	data1->tf_v0 = 0;
@@ -53,7 +54,7 @@ sys_fork(int32_t *retval) {
 	child_proc->p_tf = child_tf;
 	
 
-	//child_tf = curproc->p_tf;
+	//child_tf = curproc->p_tf; //mikes shitty code
 	
 	// kprintf("cp: %d pp: %d\n", child_tf->tf_t3, curproc->p_tf->tf_t3);
 
@@ -62,11 +63,10 @@ sys_fork(int32_t *retval) {
 	child_proc->p_addrspace = child_addr;
 
 	//copy parent thread into parent
-	(void *)child_tf;
-	(unsigned long *)child_addr;
-	(*entry)fork_entry(child_tf, child_addr);
+//	void (*func)(void *, unsigned long *);
+//	func = fork_entry((void *)child_tf, (unsigned long *)child_addr);
 	kprintf("before thread fork\n");
-	int err = thread_fork("child_thread", child_proc,(void *)child_tf, child_tf, child_addr);
+	int err = thread_fork("child_thread", child_proc, fork_entry,(void *)child_tf, (unsigned long *)child_addr);
 	kprintf("after thread fork\n");
 	(void)err;
 	//kprintf("err: %d\n", err);
@@ -84,6 +84,6 @@ sys_fork(int32_t *retval) {
 
 	pid_table[i] = *child_proc;
 	child_proc->pid = i;
-	kprintf("%d\n",child_proc->pidi);
+	kprintf("%d\n",child_proc->pid);
 	return child_proc->pid;
 }
