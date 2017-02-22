@@ -40,6 +40,9 @@
 #include <limits.h>
 #include <synch.h>
 #include <vnode.h>
+#include <lib.h>
+
+#include <mips/trapframe.h>
 
 struct addrspace;
 struct thread;
@@ -63,6 +66,7 @@ struct vnode;
  * without sleeping.
  */
 
+
 struct file_tabel {
     struct vnode *ft_vnode;
     struct lock *ft_lock;
@@ -85,11 +89,16 @@ struct proc {
 
     int pid;
     struct file_tabel *p_filetabel[64];  /*     */
-	/* add more material here as needed */
+	
+    /* add more material here as needed */
+    struct trapframe *p_tf;
 };
 
+struct proc pid_table[64];
 /* This is the process structure for the kernel and for kernel-only threads. */
 extern struct proc *kproc;
+
+struct proc *create_proc(const char *name);
 
 /* Call once during system startup to allocate data structures. */
 void proc_bootstrap(void);

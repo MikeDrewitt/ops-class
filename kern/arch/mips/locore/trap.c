@@ -40,7 +40,6 @@
 #include <mainbus.h>
 #include <syscall.h>
 
-
 /* in exception-*.S */
 extern __DEAD void asm_usermode(struct trapframe *tf);
 
@@ -74,6 +73,7 @@ void
 kill_curthread(vaddr_t epc, unsigned code, vaddr_t vaddr)
 {
 	int sig = 0;
+
 
 	KASSERT(code < NTRAPCODES);
 	switch (code) {
@@ -132,6 +132,8 @@ mips_trap(struct trapframe *tf)
 
 	/* The trap frame is supposed to be 35 registers long. */
 	KASSERT(sizeof(struct trapframe)==(35*4));
+
+	// kprintf("v1: %d", tf->tf_v1);
 
 	/*
 	 * Extract the exception code info from the register fields.
@@ -297,6 +299,8 @@ mips_trap(struct trapframe *tf)
 	 * from the exception handler.
 	 */
 
+	// kprintf("curthread: %p\n", curthread);
+	// kprintf("machdep: %p\n", curthread->t_machdep.tm_badfaultfunc);
 	if (curthread != NULL &&
 	    curthread->t_machdep.tm_badfaultfunc != NULL) {
 		tf->tf_epc = (vaddr_t) curthread->t_machdep.tm_badfaultfunc;
@@ -394,7 +398,7 @@ mips_usermode(struct trapframe *tf)
 	 * current thread's own stack. It cannot correctly be on
 	 * either another thread's stack or in the kernel heap.
 	 * (Exercise: why?)
-	 */
+	 */	
 	KASSERT(SAME_STACK(cpustacks[curcpu->c_number]-1, (vaddr_t)tf));
 
 	/*

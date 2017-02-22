@@ -92,6 +92,12 @@ proc_create(const char *name)
 	return proc;
 }
 
+struct proc *
+create_proc(const char *name)
+{
+	return proc_create(name);
+}
+
 /*
  * Destroy a proc structure.
  *
@@ -295,6 +301,7 @@ proc_create_runprogram(const char *name)
 	newproc->p_filetabel[1] = out_file;
 	newproc->p_filetabel[2] = err_file;
 
+	pid_table[0] = *newproc;
 
 	return newproc;
 }

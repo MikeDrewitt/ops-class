@@ -392,6 +392,8 @@ file      syscall/open.c
 file      syscall/close.c
 file      syscall/write.c
 file      syscall/exit.c
+file      syscall/lseek.c
+file      syscall/fork.c
 
 #
 # Startup and initialization

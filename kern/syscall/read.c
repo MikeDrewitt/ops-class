@@ -28,22 +28,21 @@ sys_read(int32_t *retval, int fd, void *buf, size_t buflen)
 		*retval = -1;
 		return EBADF;
 	}
-
 	
 	struct iovec iov;
-	struct uio u;	
+	struct uio u;
 
 	iov.iov_ubase = (userptr_t)buf;
 	iov.iov_len = buflen;
 	u.uio_iov = &iov;
 	u.uio_iovcnt = 1;
 	u.uio_resid = buflen;
-	u.uio_offset = curthread->t_proc->p_filetabel[fd]->offset;
+	u.uio_offset = curproc->p_filetabel[fd]->offset;
 	u.uio_segflg = UIO_USERSPACE;
 	u.uio_rw = UIO_READ;
-	u.uio_space = curthread->t_proc->p_addrspace;//doesnt seem right
+	u.uio_space = curproc->p_addrspace;//doesnt seem right
 
-	result = VOP_READ(curthread->t_proc->p_filetabel[fd]->ft_vnode, &u);
+	result = VOP_READ(curproc->p_filetabel[fd]->ft_vnode, &u);
 
 	if(result){
 		*retval = -1;
@@ -52,6 +51,7 @@ sys_read(int32_t *retval, int fd, void *buf, size_t buflen)
 // u.uio_resid is updated based on how many bites are written during 
 // VOP_write
 	*retval = buflen - u.uio_resid;
+	curproc->p_filetabel[fd]->offset += buflen - u.uio_resid;
 	return 0;
 
 }

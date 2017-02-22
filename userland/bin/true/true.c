@@ -29,6 +29,7 @@
 
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 /*
  * true - succeed.
@@ -37,6 +38,17 @@
 int
 main(void)
 {
-	/* Just exit with success. */
+	int res = fork();
+	
+	if (res) {
+		printf("I am the Parent\n");
+
+	}
+	else {
+		printf("I am the Child\n");
+	}
+
+
+	//printf("result: %d", result);
 	exit(0);
 }
