@@ -8,7 +8,7 @@
 #include <syscall.h>
 #include <lib.h>
 
-#include <kern/fcntl.h>
+#include <kern/wait.h>
 
 pid_t
 sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
