@@ -78,8 +78,11 @@ struct file_tabel {
 
 struct proc {
 	char *p_name;			/* Name of this process */
-	struct spinlock p_lock;		/* Lock for this structure */
-	unsigned p_numthreads;		/* Number of threads in this process */
+
+    struct spinlock p_lock;		/* Lock for this structure */
+	struct lock *p_full_lock;
+    
+    unsigned p_numthreads;		/* Number of threads in this process */
 
 	/* VM */
 	struct addrspace *p_addrspace;	/* virtual address space */

@@ -89,6 +89,9 @@ proc_create(const char *name)
 	/* VFS fields */
 	proc->p_cwd = NULL;
 
+	// best place to initialize the lock
+	proc->p_full_lock = lock_create("proc-lock");
+
 	return proc;
 }
 

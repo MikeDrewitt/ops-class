@@ -30,7 +30,7 @@
  * only the parent can collect the childs remains
  *
  * 
- *
+ * something to think about, how to see if process "has existed"
  */
 
 pid_t
@@ -40,6 +40,14 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 	(void)pid;
 	(void)status;
 	(void)options;
-	
+
+	struct cv *wait_on;
+	wait_on = cv_create("wait_on");
+
+	// the curproc->locks->thread is NULL, how to fix? 
+	while (pid_table[pid].pid != -1) {
+		cv_wait(wait_on, curproc->p_full_lock);
+	}
+
 	return 0;
 }

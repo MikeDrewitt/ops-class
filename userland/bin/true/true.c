@@ -41,13 +41,11 @@ main(void)
 	int res = fork();
 	
 	if (res) {
-		printf("I am the Parent\n");
-
+		waitpid(res, 0, 0);
 	}
 	else {
-		printf("I am the Child\n");
+		// I am the child
 	}
-
 
 	//printf("result: %d", result);
 	exit(0);
