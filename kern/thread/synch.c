@@ -284,7 +284,8 @@ cv_wait(struct cv *cv, struct lock *lock)
 	KASSERT(lock != NULL);
 	KASSERT(lock->lock_thread != NULL);
 
-	spinlock_acquire(&lock->lock_lock);	
+	spinlock_acquire(&lock->lock_lock);
+	// kprintf("hullo?\n");
 	if (lock->lock_thread == curthread) {
 
 		lock->lock_thread = NULL;
