@@ -61,6 +61,7 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 	 * ie: if pid_table[pid].pid == -1;? 
 	 *
 	 * here maybe using pid == -1 to represent exited?
+	 * or use stuff from wait.h?
 	 */
 
 	lock_acquire(curproc->p_full_lock);
