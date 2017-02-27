@@ -67,7 +67,7 @@ struct vnode;
  */
 
 
-struct file_tabel {
+struct file_table {
     struct vnode *ft_vnode;
     struct lock *ft_lock;
 
@@ -91,7 +91,7 @@ struct proc {
 	struct vnode *p_cwd;		/* current working directory */
 
     int pid;
-    struct file_tabel *p_filetabel[64];  /*     */
+    struct file_table *p_filetable[64];  /*     */
 	
     /* add more material here as needed */
     struct trapframe *p_tf;

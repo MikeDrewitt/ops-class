@@ -24,7 +24,7 @@ sys_read(int32_t *retval, int fd, void *buf, size_t buflen)
 	int result;
 
 	// EBADF fd is not a valid file descriptor, or was not opened for writing 
-	if (curthread->t_proc->p_filetabel[fd] == NULL) {
+	if (curthread->t_proc->p_filetable[fd] == NULL) {
 		*retval = -1;
 		return EBADF;
 	}
@@ -37,12 +37,12 @@ sys_read(int32_t *retval, int fd, void *buf, size_t buflen)
 	u.uio_iov = &iov;
 	u.uio_iovcnt = 1;
 	u.uio_resid = buflen;
-	u.uio_offset = curproc->p_filetabel[fd]->offset;
+	u.uio_offset = curproc->p_filetable[fd]->offset;
 	u.uio_segflg = UIO_USERSPACE;
 	u.uio_rw = UIO_READ;
 	u.uio_space = curproc->p_addrspace;//doesnt seem right
 
-	result = VOP_READ(curproc->p_filetabel[fd]->ft_vnode, &u);
+	result = VOP_READ(curproc->p_filetable[fd]->ft_vnode, &u);
 
 	if(result){
 		*retval = -1;
@@ -51,7 +51,7 @@ sys_read(int32_t *retval, int fd, void *buf, size_t buflen)
 // u.uio_resid is updated based on how many bites are written during 
 // VOP_write
 	*retval = buflen - u.uio_resid;
-	curproc->p_filetabel[fd]->offset += buflen - u.uio_resid;
+	curproc->p_filetable[fd]->offset += buflen - u.uio_resid;
 	return 0;
 
 }

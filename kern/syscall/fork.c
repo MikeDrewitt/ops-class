@@ -111,7 +111,7 @@ sys_fork(int32_t *retval) {
 
 	int i = 0;
 	while (i < 64) {
-		child_proc->p_filetabel[i] = curproc->p_filetabel[i];
+		child_proc->p_filetable[i] = curproc->p_filetable[i];
 		i++;
 	}
 

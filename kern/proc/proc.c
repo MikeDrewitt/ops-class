@@ -246,16 +246,16 @@ proc_create_runprogram(const char *name)
 	// all entries in 64 array.
 	int i;
 	for (i = 0; i < 64; i++) {
-		newproc->p_filetabel[i] = 0;
+		newproc->p_filetable[i] = 0;
 	} 
 
 	struct vnode *standin;
 	struct vnode *standout;
 	struct vnode *standerr;
 
-	struct file_tabel *in_file;
-	struct file_tabel *out_file;
-	struct file_tabel *err_file;
+	struct file_table *in_file;
+	struct file_table *out_file;
+	struct file_table *err_file;
 	
 	in_file = kmalloc(sizeof(*in_file));
 	out_file = kmalloc(sizeof(*out_file));
@@ -300,9 +300,9 @@ proc_create_runprogram(const char *name)
 	out_file->ft_vnode = standout;	
 	err_file->ft_vnode = standerr;
 
-	newproc->p_filetabel[0] = in_file;
-	newproc->p_filetabel[1] = out_file;
-	newproc->p_filetabel[2] = err_file;
+	newproc->p_filetable[0] = in_file;
+	newproc->p_filetable[1] = out_file;
+	newproc->p_filetable[2] = err_file;
 
 	pid_table[0] = *newproc;
 	newproc->pid = 0;

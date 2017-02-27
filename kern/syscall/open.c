@@ -34,7 +34,7 @@ sys_open(int32_t *retval, const char *filename, int flags)
 	// (void)flags;
 
 	struct vnode *v;
-	struct file_tabel *file;
+	struct file_table *file;
 
 	file = kmalloc(sizeof(*file));
 
@@ -66,12 +66,12 @@ sys_open(int32_t *retval, const char *filename, int flags)
 	}
 
 	int file_descriptor = 0; //position in the file table
-	while (curthread->t_proc->p_filetabel[file_descriptor] != NULL) {	
+	while (curthread->t_proc->p_filetable[file_descriptor] != NULL) {	
 		file_descriptor++;
 	}//run out of space? 
 
 	file->ft_vnode = v;
-	curthread->t_proc->p_filetabel[file_descriptor] = file;
+	curthread->t_proc->p_filetable[file_descriptor] = file;
 
 	*retval = file_descriptor;
 	return 0;
