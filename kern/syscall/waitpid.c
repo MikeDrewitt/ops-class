@@ -16,7 +16,7 @@
  * Possible use of CV to wait until the pid is exited from.
  *
  * return "encoded exit status" in 2nd param 
- * this is gotten from the exitcode that was passed into the exit call
+ * this is taken from the exitcode that was passed into the exit call
  *
  * if the PID has already exited then return ie: if it's "has exited" or 
  * "does not exist"
@@ -30,9 +30,10 @@
  * if status is NULL it does not reasign that value upon the process exit
  *
  * only the parent can collect the childs remains
- *
  * 
  * something to think about, how to see if process "has existed" maybe -1?
+ * or are we supposed to use something like WIFEXITED(x)? or is that for just
+ * usercode?
  *
  * How to check if we're the parent?
  * does it matter? Is there any other way to get the childs ID other than calling
@@ -71,7 +72,11 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 		cv_wait(wait_on, curproc->p_full_lock);
 	}
 
+	/*
+	 * when done waiting return the exit status from _exit() in *status
+	 */
+
 	lock_release(curproc->p_full_lock);
 
-	return 0;
+	return pid;
 }
