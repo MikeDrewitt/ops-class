@@ -8,7 +8,7 @@
 pid_t
 sys_getpid(int32_t *retval)
 {
-	(void)retval;
+	*retval = curproc->pid;
 
-	return curproc->pid;
+	return 0;
 }
