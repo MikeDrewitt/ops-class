@@ -46,6 +46,8 @@
 pid_t
 sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 
+	
+
 	(void)retval;
 	(void)pid;
 	(void)status;
@@ -67,12 +69,16 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 	lock_acquire(curproc->p_full_lock);
 
 	// wait until 
-	kprintf("%d\n", pid_table[pid].running);
+	// kprintf("%d\n", pid_table[pid].running);
 	while (pid_table[pid].exitcode == -1) {
 		// fork seems to fall into a trap here
+		kprintf("exitcode_loop: %d\n", pid_table[pid].exitcode);
 		cv_wait(wait_on, curproc->p_full_lock);
 	}
 
+
+	kprintf("exitcode: %d\n", pid_table[pid].exitcode);
+	
 	/*
 	 * when done waiting return the exit status from _exit() in *status
 	 */

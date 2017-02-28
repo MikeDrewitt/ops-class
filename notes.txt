@@ -1,0 +1,12 @@
+// Things to ask in office hours 2/17
+
+	tf_status => is it important, and should we change it?
+		anything significant about 0xFF0C
+		what would cause illegal instruction?
+		trap.c:280
+	lseek => bald dave comment, offset should be a pointer?
+
+	what do the macros do in wait.h
+	
+
+

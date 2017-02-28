@@ -3,6 +3,7 @@
 #include <current.h>
 #include <proc.h>
 #include <synch.h>
+#include <addrspace.h>
 
 #include <kern/wait.h>
 #include <kern/unistd.h>
@@ -11,9 +12,15 @@ void
 sys__exit(int32_t *retval, int exitcode)
 {
 	(void)retval;
-	(void)exitcode;
-	
-	kprintf("leaving exit\n");
+	// (void)exitcode;
+		
+
+	// The Lord says to set the exitcode to _MKWAIT_EXIT(_exitcode)
+	// exitcode = _MKWAIT_EXIT(exitcode);	
+	curproc->exitcode = exitcode;
+	curproc->running = false;
+
+	as_deactivate();	
 
 	/*
 	 * Something to think about, how can a child contact the parent to call 
@@ -26,9 +33,6 @@ sys__exit(int32_t *retval, int exitcode)
 	 * 
 	 * Must use _MKWAIT_EXIT(x) to mark the exitcode
 	 */
-
-	// no clue how to use this
-	// _MKWAIT_EXIT(exitcode);
 
 	// proc_destroy(curthread->t_proc);
 	
