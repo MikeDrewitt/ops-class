@@ -115,13 +115,17 @@ sys_fork(int32_t *retval) {
 		i++;
 	}
 
-	i = 0;
+	i = 1;
 	while (pid_table[i].p_name != NULL) {
 		i++; // probably will introduce bug if > 64 processes. 
 	}
 
 	pid_table[i] = *child_proc;
+
 	child_proc->pid = i;
+	child_proc->parent_pid = curproc->pid;
+	child_proc->exitcode = -1;
+	child_proc->running = true;
 	
 	// kprintf("%d\n",child_proc->pid);
 

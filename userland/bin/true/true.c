@@ -42,9 +42,19 @@ main(void)
 	
 	if (res) {
 		waitpid(res, 0, 0);
+		// printf("Parent");
 	}
 	else {
+		// printf("Child");
 		// I am the child
+		int child = fork();
+
+		if (child) {
+			waitpid(child, 0, 0);
+		}
+		else {
+			printf("Grandchild\n");
+		}
 	}
 
 	//printf("result: %d", result);

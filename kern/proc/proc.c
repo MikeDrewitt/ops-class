@@ -89,7 +89,7 @@ proc_create(const char *name)
 	/* VFS fields */
 	proc->p_cwd = NULL;
 
-	// best place to initialize the lock
+	// best place to initialize the lock?
 	proc->p_full_lock = lock_create("proc-lock");
 
 	return proc;
@@ -195,7 +195,12 @@ void
 proc_bootstrap(void)
 {
 	kproc = proc_create("[kernel]");
-	
+
+	kproc->pid = 1;
+	kproc->running = true;
+
+	pid_table[1] = *kproc;
+
 	/*	
 	kproc->p_ft[0] = STDIN;
 	kproc->p_ft[1] = STDOUT;
@@ -304,8 +309,13 @@ proc_create_runprogram(const char *name)
 	newproc->p_filetable[1] = out_file;
 	newproc->p_filetable[2] = err_file;
 
-	pid_table[0] = *newproc;
-	newproc->pid = 0;
+	newproc->pid = 2;
+	newproc->parent_pid = 1;
+
+	newproc->exitcode = -1;
+	newproc->running = true;
+
+	pid_table[2] = *newproc;
 
 	return newproc;
 }

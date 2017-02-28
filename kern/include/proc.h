@@ -91,6 +91,12 @@ struct proc {
 	struct vnode *p_cwd;		/* current working directory */
 
     int pid;
+    int parent_pid;
+
+    int exitcode; 
+
+    bool running;
+
     struct file_table *p_filetable[64];  /*     */
 	
     /* add more material here as needed */
