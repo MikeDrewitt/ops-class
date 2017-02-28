@@ -150,6 +150,7 @@ syscall(struct trapframe *tf)
 		case SYS__exit:
 			/* Not sure what to assign err to here, so I just zero it out  */
 			sys__exit(&retval, (int) tf->tf_a0);
+			kprintf("back\n");
 			err = 0;
 		break;
 			
@@ -180,6 +181,9 @@ syscall(struct trapframe *tf)
 		 * userlevel to a return value of -1 and the error
 		 * code in errno.
 		 */
+
+
+
 		tf->tf_v0 = err;
 		tf->tf_a3 = 1;      /* signal an error */
 	}
@@ -211,6 +215,7 @@ syscall(struct trapframe *tf)
 	/* ...or leak any spinlocks */
 	KASSERT(curthread->t_iplhigh_count == 0);
 
+	kprintf("end syscall %d\n", callno);
 	// kprintf("v0: %lld\n", (long long int)tf->tf_v0);
 	// kprintf("v1: %lld\n", (long long int)tf->tf_v1);
 	// kprintf("finish syscall\n");

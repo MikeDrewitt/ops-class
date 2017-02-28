@@ -41,22 +41,19 @@ main(void)
 	int res = fork();
 	
 	if (res) {
-		waitpid(res, 0, 0);
-		// printf("Parent");
+		
+		while (1) {
+			int i = 0;
+			(void)i;
+		}
+		
+		// printf("Parent\n");
 	}
 	else {
-		// printf("Child");
-		// I am the child
-		int child = fork();
-
-		if (child) {
-			waitpid(child, 0, 0);
-		}
-		else {
-			printf("Grandchild\n");
-		}
+		// printf("child\n");
 	}
 
 	//printf("result: %d", result);
+	printf("child_leaving\n");
 	exit(0);
 }

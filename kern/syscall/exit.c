@@ -12,6 +12,8 @@ sys__exit(int32_t *retval, int exitcode)
 {
 	(void)retval;
 	(void)exitcode;
+	
+	kprintf("leaving exit\n");
 
 	/*
 	 * Something to think about, how can a child contact the parent to call 
