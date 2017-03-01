@@ -49,7 +49,7 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 	
 
 	(void)retval;
-	(void)pid;
+	// (void)pid;
 	(void)status;
 	(void)options;
 
