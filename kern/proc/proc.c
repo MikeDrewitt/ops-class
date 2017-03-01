@@ -91,7 +91,8 @@ proc_create(const char *name)
 
 	// best place to initialize the lock?
 	proc->p_full_lock = lock_create("proc-lock");
-
+	proc->p_cv = cv_create("proc-cv");
+	
 	return proc;
 }
 
@@ -181,6 +182,9 @@ proc_destroy(struct proc *proc)
 		as_destroy(as);
 	}
 
+	// decrement refcounter
+	// close file if refcounter == 0
+
 	KASSERT(proc->p_numthreads == 0);
 	spinlock_cleanup(&proc->p_lock);
 
@@ -200,12 +204,6 @@ proc_bootstrap(void)
 	kproc->running = true;
 
 	pid_table[1] = *kproc;
-
-	/*	
-	kproc->p_ft[0] = STDIN;
-	kproc->p_ft[1] = STDOUT;
-	kproc->p_ft[2] = STDERR;
-	*/
 
 	if (kproc == NULL) {
 		panic("proc_create for kproc failed\n");
@@ -261,7 +259,7 @@ proc_create_runprogram(const char *name)
 	struct file_table *in_file;
 	struct file_table *out_file;
 	struct file_table *err_file;
-	
+
 	in_file = kmalloc(sizeof(*in_file));
 	out_file = kmalloc(sizeof(*out_file));
 	err_file = kmalloc(sizeof(*err_file));	
@@ -269,7 +267,7 @@ proc_create_runprogram(const char *name)
 	in_file->ft_lock = lock_create("in_lock");
 	out_file->ft_lock = lock_create("out_lock");	
 	err_file->ft_lock = lock_create("err_lock");
-	
+
 	in_file->flag = O_RDONLY;
 	out_file->flag = O_WRONLY;	
 	err_file->flag = O_WRONLY;
@@ -277,6 +275,10 @@ proc_create_runprogram(const char *name)
 	in_file->offset = 0;
 	out_file->offset = 0;	
 	err_file->offset = 0;
+
+	in_file->ref_counter = 1;
+	out_file->ref_counter = 1;
+	err_file->ref_counter = 1;
 
 	int in_result;
 	int out_result;

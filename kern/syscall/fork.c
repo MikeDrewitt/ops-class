@@ -14,20 +14,22 @@
 
 static 
 void
-fork_entry(void *data1, unsigned long data2){
+fork_entry(struct trapframe *data1, unsigned long data2){
 		
 	struct trapframe tf;
 
-	memcpy(&tf, curproc->p_tf, sizeof(*curproc->p_tf));
+	memcpy(&tf, data1, sizeof(*data1));
+
+	// kprintf("sizeof trapframe: %d\n", sizeof(*curproc->p_tf));
+	// kprintf("trap cause: %x\n", tf.tf_cause);
 
 	tf.tf_v0 = 0;
 	tf.tf_a3 = 0;
 	tf.tf_epc += 4;
-
-	kprintf("trap cause: %x\n", tf.tf_cause);
-
+	
 	as_activate();
 	mips_usermode(&tf);
+
 
 	(void)data1;
 	(void)data2;
@@ -47,7 +49,9 @@ sys_fork(int32_t *retval) {
 	 * 
 	 */
 
-	// kprintf("current cause: %x\n", curproc->p_tf->tf_cause);
+	lock_acquire(curproc->p_full_lock);
+
+	kprintf("FORK -> My ID: %d\n", curproc->pid);
 
 	struct proc *child_proc;
 	child_proc = create_proc("child_proc");
@@ -77,6 +81,8 @@ sys_fork(int32_t *retval) {
 
 	int i = 0;
 	while (i < 64) {
+		if (curproc->p_filetable[i] != NULL) curproc->p_filetable[i]->ref_counter += 1;
+		
 		child_proc->p_filetable[i] = curproc->p_filetable[i];
 		i++;
 	}
@@ -93,15 +99,17 @@ sys_fork(int32_t *retval) {
 	child_proc->exitcode = -1;
 	child_proc->running = true;
 	
-	thread_fork("child_thread", child_proc, fork_entry,(void *)child_tf, (unsigned long)child_addr);
+	thread_fork("child_thread", child_proc, (void *)fork_entry, child_tf, (unsigned long)child_addr);
 
-	// kprintf("child PID: %d\n",child_proc->pid);
-	// kprintf("parent PID: %d\n",child_proc->parent_pid);
-	// kprintf("child exitcode: %d\n",child_proc->exitcode);
-	// kprintf("child running bool: %d\n",child_proc->running);
+	kprintf("FORK => child PID: %d\n",child_proc->pid);
+	kprintf("FORK => parent PID: %d\n",child_proc->parent_pid);
+	kprintf("FORK => child exitcode: %d\n",child_proc->exitcode);
+	kprintf("FORK => child running bool: %d\n",child_proc->running);
 
 	// kprintf("parent cause: %x\n", curproc->p_tf->tf_cause);
 
 	*retval = child_proc->pid;
+
+	lock_release(curproc->p_full_lock);
 	return 0;
 }

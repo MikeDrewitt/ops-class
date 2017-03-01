@@ -275,8 +275,8 @@ mips_trap(struct trapframe *tf)
 		 * Kill the current user process.
 		 */
 		
-		kprintf("current trap cause: %x\n", tf->tf_cause);
-		kprintf("code: %d\n", code);
+		// kprintf("current trap cause: %x\n", tf->tf_cause);
+		// kprintf("code: %d\n", code);
 
 		kill_curthread(tf->tf_epc, code, tf->tf_vaddr);
 		goto done;

@@ -52,6 +52,7 @@ sys_open(int32_t *retval, const char *filename, int flags)
 	
 	file->flag = flags;
 	file->offset = 0;
+	file->ref_counter = 1;
 
 	int result;
 	char name_copy[128];

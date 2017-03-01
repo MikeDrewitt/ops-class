@@ -53,37 +53,26 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 	(void)status;
 	(void)options;
 
-	struct cv *wait_on;
-	wait_on = cv_create("wait_on");
-
 	// if pid DNE then fail.
+
+	lock_acquire(pid_table[pid].p_full_lock);
 	
-	/*
-	 * if pid alread exited return
-	 * ie: if pid_table[pid].pid == -1;? 
-	 *
-	 * here maybe using pid == -1 to represent exited?
-	 * or use stuff from wait.h?
-	 */
-
-	lock_acquire(curproc->p_full_lock);
-
-	// wait until 
-	// kprintf("%d\n", pid_table[pid].running);
-	while (pid_table[pid].exitcode == -1) {
-		// fork seems to fall into a trap here
-		kprintf("exitcode_loop: %d\n", pid_table[pid].exitcode);
-		cv_wait(wait_on, curproc->p_full_lock);
+	kprintf("WAIT => param pid: %d\n", pid);
+		
+	kprintf("WAIT => pid: %d\n", pid_table[pid].pid);
+	kprintf("WAIT => running: %d\n", pid_table[pid].running);
+	kprintf("WAIT => exitcode: %d\n", pid_table[pid].exitcode);
+	
+	while (pid_table[pid].running) {
+		kprintf("waiting. . . \n");
+		cv_wait(pid_table[pid].p_cv, pid_table[pid].p_full_lock);
 	}
-
-
-	kprintf("exitcode: %d\n", pid_table[pid].exitcode);
 	
 	/*
 	 * when done waiting return the exit status from _exit() in *status
 	 */
 
-	lock_release(curproc->p_full_lock);
+	lock_release(pid_table[pid].p_full_lock);
 
 	return pid;
 }

@@ -74,6 +74,7 @@ struct file_table {
     int flag;               /* read, write, read/write  */
     int offset;             /* position in the file */
 
+    int ref_counter;
 };
 
 struct proc {
@@ -81,6 +82,7 @@ struct proc {
 
     struct spinlock p_lock;		/* Lock for this structure */
 	struct lock *p_full_lock;
+	struct cv *p_cv;
     
     unsigned p_numthreads;		/* Number of threads in this process */
 

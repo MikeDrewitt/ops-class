@@ -41,30 +41,23 @@ main(void)
 	int res = fork();
 	
 	if (res) {
-		// waitpid(res, 0, 0);		
 
-		// int i = 0;
-		// while(1) i++;
-		printf("Parent\n");
+		
+		// printf("Parent\n");
+	
+		// printf("TRUE => %d\n", res);	
+		waitpid(res, 0, 0);	
+		exit(1);	
 	}
-	else {
-		// printf("Child-Exit\n");
-		
-	/*
-		int i;
-		int j = 0;
-		for (i = 0; i < 1000000; i++) {
-			j += 1;
-			printf("%d\n", j);
-		}
-		
+	else {	
+
+		int i = 0;
+		while(i < 100000) i++;
+
+		// printf("Child\n");
+
 		exit(1);
-	*/
-		// int i = 0;
-		// while(1) i++;
-		printf("child\n");
 	}
 	
 	// printf("child PID: %d\n", res);
-	exit(1);
 }
