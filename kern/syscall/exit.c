@@ -31,11 +31,11 @@ sys__exit(int32_t *retval, int exitcode)
 	// kprintf("EXIT => pid: %d\n", curproc->pid);	
 	// kprintf("EXIT => running: %d\n", curproc->running);	
 	// kprintf("EXIT => exitcode: %d\n", curproc->exitcode);	
-
-	cv_signal(curproc->p_cv, curproc->p_full_lock);
-
+	
 	spinlock_release(&curproc->p_lock);
 
+	P(curproc->p_sem);
+	
 	// thread_exit();
 
 	/*

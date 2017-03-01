@@ -82,7 +82,7 @@ struct proc {
 
     struct spinlock p_lock;		/* Lock for this structure */
 	struct lock *p_full_lock;
-	struct cv *p_cv;
+	struct semaphore *p_sem;
     
     unsigned p_numthreads;		/* Number of threads in this process */
 

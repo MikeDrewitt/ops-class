@@ -91,7 +91,7 @@ proc_create(const char *name)
 
 	// best place to initialize the lock?
 	proc->p_full_lock = lock_create("proc-lock");
-	proc->p_cv = cv_create("proc-cv");
+	proc->p_sem = sem_create("proc-sem", 0);
 	
 	return proc;
 }
@@ -187,8 +187,33 @@ proc_destroy(struct proc *proc)
 
 	KASSERT(proc->p_numthreads == 0);
 	spinlock_cleanup(&proc->p_lock);
+/*
+	lock_destroy(proc->p_full_lock);
+	sem_destroy(proc->p_sem);
 
+	bzero(proc->p_tf, sizeof(struct trapframe));
+	// kfree(proc->p_tf);
+
+	int i;
+	for (i = 0; i < 64; i++) {
+		if (proc->p_filetable[i] != NULL) {
+			proc->p_filetable[i]->ref_counter -= 1;
+			
+			if (proc->p_filetable[i]->ref_counter == 0) {
+				lock_destroy(proc->p_filetable[i]->ft_lock);
+
+				proc->p_filetable[i]->flag = 0;
+				proc->p_filetable[i]->offset = 0;
+
+				// kfree(proc->p_filetable[i]);
+				proc->p_filetable[i] = NULL;
+			}
+		}
+	}
+*/
+	// kprintf("one\n");
 	kfree(proc->p_name);
+	// kprintf("two\n");
 	kfree(proc);
 }
 

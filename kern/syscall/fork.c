@@ -70,13 +70,16 @@ sys_fork(int32_t *retval) {
 	memcpy(child_tf, curproc->p_tf, sizeof(struct trapframe));
 	child_proc->p_tf = child_tf;
 
+
 	//copy parent address space into child proc
 	as_copy(curproc->p_addrspace, &child_addr);
 	child_proc->p_addrspace = child_addr;
 
 	int i = 0;
 	while (i < 64) {
-		if (curproc->p_filetable[i] != NULL) curproc->p_filetable[i]->ref_counter += 1;
+		if (curproc->p_filetable[i] != NULL) {
+			curproc->p_filetable[i]->ref_counter += 1;
+		}
 		
 		child_proc->p_filetable[i] = curproc->p_filetable[i];
 		i++;

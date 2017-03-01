@@ -50,13 +50,13 @@ main(void)
 		// exit(1);
 		//
 		
-		int i = 0;
-		while(1) i++;
+		//int i = 0;
+		//while(1) i++;
 	}
 	else {	
 
-		int i = 0;
-		while(i < 100000) i++;
+		//int i = 0;
+		//while(i < 100000) i++;
 
 		// printf("Child\n");
 

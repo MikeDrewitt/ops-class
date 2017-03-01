@@ -5,6 +5,8 @@
 		somehow also calls waitpid at some point.
 
 		All orphaned procs could be adopted via the init proc.
+
+	In close we never do VFS_close
 	
 
 

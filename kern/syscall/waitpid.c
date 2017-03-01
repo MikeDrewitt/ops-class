@@ -54,8 +54,6 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 	(void)options;
 
 	// if pid DNE then fail.
-
-	lock_acquire(pid_table[pid].p_full_lock);
 	
 	kprintf("WAIT => param pid: %d\n", pid);
 	
@@ -64,17 +62,37 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 	kprintf("WAITING ON  => Parent pid: %d\n", pid_table[pid].parent_pid);
 	kprintf("WAITING ON  => running: %d\n", pid_table[pid].running);
 	kprintf("WAITING ON  => exitcode: %d\n", pid_table[pid].exitcode);
-	
-	while (pid_table[pid].running) {
-		kprintf("waiting. . . \n");
-		cv_wait(pid_table[pid].p_cv, pid_table[pid].p_full_lock);
+
+	// Wait here until _exit() is called by pid
+	V(pid_table[pid].p_sem);
+
+	lock_destroy(pid_table[pid].p_full_lock);
+	sem_destroy(pid_table[pid].p_sem);
+
+	bzero(pid_table[pid].p_tf, sizeof(struct trapframe));
+	// kfree(proc->p_tf);
+
+	int i;
+	for (i = 0; i < 64; i++) {
+		if (pid_table[pid].p_filetable[i] != NULL) {
+			pid_table[pid].p_filetable[i]->ref_counter -= 1;
+			
+			if (pid_table[pid].p_filetable[i]->ref_counter == 0) {
+				lock_destroy(pid_table[pid].p_filetable[i]->ft_lock);
+
+				pid_table[pid].p_filetable[i]->flag = 0;
+				pid_table[pid].p_filetable[i]->offset = 0;
+
+				// kfree(proc->p_filetable[i]);
+				pid_table[pid].p_filetable[i] = NULL;
+			}
+		}
 	}
-	
+
+	proc_destroy(&pid_table[pid]);
+
 	/*
 	 * when done waiting return the exit status from _exit() in *status
 	 */
-
-	lock_release(pid_table[pid].p_full_lock);
-
 	return pid;
 }
