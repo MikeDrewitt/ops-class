@@ -23,13 +23,17 @@ fork_entry(struct trapframe *data1, unsigned long data2){
 	// kprintf("sizeof trapframe: %d\n", sizeof(*curproc->p_tf));
 	// kprintf("trap cause: %x\n", tf.tf_cause);
 
+	kprintf("CHILD => child PID: %d\n",curproc->pid);
+	kprintf("CHILD => parent PID: %d\n",curproc->parent_pid);
+	kprintf("CHILD => child exitcode: %d\n",curproc->exitcode);
+	kprintf("CHILD => child running bool: %d\n",curproc->running);
+
 	tf.tf_v0 = 0;
 	tf.tf_a3 = 0;
 	tf.tf_epc += 4;
 	
 	as_activate();
 	mips_usermode(&tf);
-
 
 	(void)data1;
 	(void)data2;
@@ -69,15 +73,6 @@ sys_fork(int32_t *retval) {
 	//copy parent address space into child proc
 	as_copy(curproc->p_addrspace, &child_addr);
 	child_proc->p_addrspace = child_addr;
-
-	//copy parent thread into parent
-
-	//	void (*func)(void *, unsigned long *);
-	//	func = fork_entry((void *)child_tf, (unsigned long *)child_addr);
-
-	
-	// (void)err;
-	// kprintf("err: %d\n", err);
 
 	int i = 0;
 	while (i < 64) {

@@ -20,8 +20,8 @@ sys__exit(int32_t *retval, int exitcode)
 	// kprintf("yo\n");	
 	exitcode = _MKWAIT_EXIT(exitcode);	
 	
-	curproc->exitcode = exitcode;
-	curproc->running = false;
+	// curproc->exitcode = exitcode;
+	// curproc->running = false;
 
 	kprintf("EXIT => pid: %d\n", curproc->pid);	
 	kprintf("EXIT => running: %d\n", curproc->running);	
