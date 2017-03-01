@@ -47,7 +47,7 @@ main(void)
 	
 		// printf("TRUE => %d\n", res);	
 		waitpid(res, 0, 0);	
-		exit(1);	
+		// exit(1);	
 	}
 	else {	
 
