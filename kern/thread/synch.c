@@ -285,13 +285,13 @@ cv_wait(struct cv *cv, struct lock *lock)
 	KASSERT(lock->lock_thread != NULL);
 
 	spinlock_acquire(&lock->lock_lock);
-	// kprintf("hullo?\n");
 	if (lock->lock_thread == curthread) {
 
 		lock->lock_thread = NULL;
 		wchan_wakeone(lock->lock_wchan, &lock->lock_lock);
 	
 		wchan_sleep(cv->cv_wchan, &lock->lock_lock);
+		kprintf("hullo?\n");
 	
 		while (lock->lock_thread != NULL) {
 			wchan_sleep(lock->lock_wchan, &lock->lock_lock);

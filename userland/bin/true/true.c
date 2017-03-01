@@ -43,11 +43,15 @@ main(void)
 	if (res) {
 
 		
-		// printf("Parent\n");
 	
 		// printf("TRUE => %d\n", res);	
 		waitpid(res, 0, 0);	
-		// exit(1);	
+		// printf("Parent\n");
+		// exit(1);
+		//
+		
+		int i = 0;
+		while(1) i++;
 	}
 	else {	
 
@@ -56,7 +60,7 @@ main(void)
 
 		// printf("Child\n");
 
-		exit(1);
+		exit(2);
 	}
 	
 	// printf("child PID: %d\n", res);

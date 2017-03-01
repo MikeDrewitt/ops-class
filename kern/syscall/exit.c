@@ -27,10 +27,10 @@ sys__exit(int32_t *retval, int exitcode)
 	curproc->exitcode = exitcode;
 	curproc->running = false;
 
-	kprintf("EXIT => name: %s\n", curproc->p_name);
-	kprintf("EXIT => pid: %d\n", curproc->pid);	
-	kprintf("EXIT => running: %d\n", curproc->running);	
-	kprintf("EXIT => exitcode: %d\n", curproc->exitcode);	
+	// kprintf("EXIT => name: %s\n", curproc->p_name);
+	// kprintf("EXIT => pid: %d\n", curproc->pid);	
+	// kprintf("EXIT => running: %d\n", curproc->running);	
+	// kprintf("EXIT => exitcode: %d\n", curproc->exitcode);	
 
 	cv_signal(curproc->p_cv, curproc->p_full_lock);
 

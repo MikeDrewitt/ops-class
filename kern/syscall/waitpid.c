@@ -59,10 +59,11 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 	
 	kprintf("WAIT => param pid: %d\n", pid);
 	
-	kprintf("WAIT => name: %s\n", pid_table[pid].p_name);
-	kprintf("WAIT => pid: %d\n", pid_table[pid].pid);
-	kprintf("WAIT => running: %d\n", pid_table[pid].running);
-	kprintf("WAIT => exitcode: %d\n", pid_table[pid].exitcode);
+	kprintf("WAITING ON => name: %s\n", pid_table[pid].p_name);
+	kprintf("WAITING ON => pid: %d\n", pid_table[pid].pid);
+	kprintf("WAITING ON  => Parent pid: %d\n", pid_table[pid].parent_pid);
+	kprintf("WAITING ON  => running: %d\n", pid_table[pid].running);
+	kprintf("WAITING ON  => exitcode: %d\n", pid_table[pid].exitcode);
 	
 	while (pid_table[pid].running) {
 		kprintf("waiting. . . \n");
