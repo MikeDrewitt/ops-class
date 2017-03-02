@@ -41,27 +41,14 @@ main(void)
 	int res = fork();
 	
 	if (res) {
-
 		
-	
-		// printf("TRUE => %d\n", res);	
-		waitpid(res, 0, 0);	
 		// printf("Parent\n");
-		// exit(1);
-		//
-		
-		//int i = 0;
-		//while(1) i++;
+		waitpid(res, 0, 0);	
+
 	}
 	else {	
-
-		//int i = 0;
-		//while(i < 100000) i++;
-
 		// printf("Child\n");
-
-		exit(2);
 	}
 	
-	// printf("child PID: %d\n", res);
+	exit(2);
 }

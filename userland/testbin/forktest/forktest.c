@@ -188,6 +188,7 @@ test(int nowait)
 		// 0, 1, 2 are stdin, stdout, stderr
 		err(1, "Failed to open file to write data into\n");
 	}
+	
 
 	pid0 = dofork();
 	nprintf(".");
@@ -196,6 +197,7 @@ test(int nowait)
 	if (depth != 1) {
 		warnx("depth %d, should be 1", depth);
 	}
+	printf("HULLLLLLLLLLLO\n");
 	check();
 
 	pid1 = dofork();
@@ -289,6 +291,8 @@ main(int argc, char *argv[])
 	static const char expected[] =
 		"|----------------------------|\n";
 	int nowait=0;
+
+	printf("argc %d\n", argc);
 
 	if (argc==2 && !strcmp(argv[1], "-w")) {
 		nowait=1;

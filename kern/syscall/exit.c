@@ -20,7 +20,7 @@ sys__exit(int32_t *retval, int exitcode)
 	// kprintf("yo\n");
 	//
 	
-	spinlock_acquire(&curproc->p_lock);
+	lock_acquire(curproc->p_full_lock);
 
 	exitcode = _MKWAIT_EXIT(exitcode);	
 	
@@ -32,11 +32,12 @@ sys__exit(int32_t *retval, int exitcode)
 	// kprintf("EXIT => running: %d\n", curproc->running);	
 	// kprintf("EXIT => exitcode: %d\n", curproc->exitcode);	
 	
-	spinlock_release(&curproc->p_lock);
+	thread_exit();
+	kprintf("exited\n");
+	lock_release(curproc->p_full_lock);
 
 	P(curproc->p_sem);
 	
-	// thread_exit();
 
 	/*
 	 * Something to think about, how can a child contact the parent to call 

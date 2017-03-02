@@ -185,9 +185,11 @@ proc_destroy(struct proc *proc)
 	// decrement refcounter
 	// close file if refcounter == 0
 
+		
+
 	KASSERT(proc->p_numthreads == 0);
 	spinlock_cleanup(&proc->p_lock);
-/*
+
 	lock_destroy(proc->p_full_lock);
 	sem_destroy(proc->p_sem);
 
@@ -210,7 +212,7 @@ proc_destroy(struct proc *proc)
 			}
 		}
 	}
-*/
+
 	// kprintf("one\n");
 	kfree(proc->p_name);
 	// kprintf("two\n");
@@ -228,7 +230,7 @@ proc_bootstrap(void)
 	kproc->pid = 1;
 	kproc->running = true;
 
-	pid_table[1] = *kproc;
+	pid_table[1] = kproc;
 
 	if (kproc == NULL) {
 		panic("proc_create for kproc failed\n");
@@ -342,7 +344,7 @@ proc_create_runprogram(const char *name)
 	newproc->exitcode = -1;
 	newproc->running = true;
 
-	pid_table[2] = *newproc;
+	pid_table[2] = newproc;
 
 	return newproc;
 }

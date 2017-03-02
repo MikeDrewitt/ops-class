@@ -55,7 +55,7 @@ sys_fork(int32_t *retval) {
 
 	lock_acquire(curproc->p_full_lock);
 
-	kprintf("FORK -> My ID: %d\n", curproc->pid);
+	// kprintf("FORK -> My ID: %d\n", curproc->pid);
 
 	struct proc *child_proc;
 	child_proc = create_proc("child_proc");
@@ -86,20 +86,21 @@ sys_fork(int32_t *retval) {
 	}
 
 	i = 1;
-	while (pid_table[i].p_name != NULL) {
+	while (pid_table[i] != NULL) {
 		i++; // probably will introduce bug if > 64 processes. 
 	}
-
 
 	child_proc->pid = i;
 	child_proc->parent_pid = curproc->pid;
 	child_proc->exitcode = -1;
 	child_proc->running = true;
-	
-	pid_table[i] = *child_proc;
+
+
+	pid_table[i] = child_proc;
 	
 	thread_fork("child_thread", child_proc, (void *)fork_entry, child_tf, (unsigned long)child_addr);
 
+	kprintf("FORK => numthreads: %d\n", child_proc->p_numthreads);
 	// kprintf("FORK => child PID: %d\n",child_proc->pid);
 	// kprintf("FORK => parent PID: %d\n",child_proc->parent_pid);
 	// kprintf("FORK => child exitcode: %d\n",child_proc->exitcode);
