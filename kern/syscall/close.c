@@ -27,7 +27,6 @@ int
 sys_close(int32_t *retval, int fd)
 {
 
-	spinlock_acquire(&curproc->p_lock);
 
 	if (fd < 0 || curthread->t_proc->p_filetable[fd] == NULL) {
 		*retval = -1;
@@ -44,7 +43,6 @@ sys_close(int32_t *retval, int fd)
 
 	*retval = 0;
 	
-	spinlock_release(&curproc->p_lock);
 	
 	return 0;
 }

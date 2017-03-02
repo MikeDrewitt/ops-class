@@ -100,7 +100,7 @@ sys_fork(int32_t *retval) {
 	
 	thread_fork("child_thread", child_proc, (void *)fork_entry, child_tf, (unsigned long)child_addr);
 
-	// kprintf("...\n");
+	 // kprintf("...\n");
 
 	// kprintf("FORK => numthreads: %d\n", child_proc->p_numthreads);
 	// kprintf("FORK => child PID: %d\n",child_proc->pid);

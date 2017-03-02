@@ -50,5 +50,5 @@ main(void)
 		// printf("Child\n");
 	}
 	
-	exit(2);
+	exit(0);
 }

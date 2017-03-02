@@ -17,7 +17,6 @@ sys__exit(int32_t *retval, int exitcode)
 
 	// The Lord says to set the exitcode to _MKWAIT_EXIT(_exitcode)
 
-	// kprintf("yo\n");
 	//
 	
 	lock_acquire(curproc->p_full_lock);
@@ -32,11 +31,15 @@ sys__exit(int32_t *retval, int exitcode)
 	// kprintf("EXIT => running: %d\n", curproc->running);	
 	// kprintf("EXIT => exitcode: %d\n", curproc->exitcode);	
 	
-	thread_exit();
-	kprintf("exited\n");
+	
+	// curproc->p_numthreads = 0;
+
+	// kprintf("EXIT => thread_count: %d\n", curproc->p_numthreads);
+
 	lock_release(curproc->p_full_lock);
 
-	P(curproc->p_sem);
+	V(curproc->p_sem);
+	thread_exit();
 	
 
 	/*

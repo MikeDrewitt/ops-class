@@ -63,9 +63,10 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 	// kprintf("WAITING ON  => exitcode: %d\n", pid_table[pid]->exitcode);
 
 	lock_acquire(curproc->p_full_lock);
+	
 
 	// Wait here until _exit() is called by pid
-	V(pid_table[pid]->p_sem);
+	P(pid_table[pid]->p_sem);
 
 	/*
 	lock_destroy(pid_table[pid]->p_full_lock);
@@ -93,7 +94,6 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 	*/	
 
 	// kprintf("oh ffs\n");
-	// kprintf("Child's Thread Count: %d\n", pid_table[pid]->p_numthreads);
 	proc_destroy(pid_table[pid]);
 
 	lock_release(curproc->p_full_lock);
