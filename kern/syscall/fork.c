@@ -57,6 +57,11 @@ sys_fork(int32_t *retval) {
 
 	// kprintf("FORK -> My ID: %d\n", curproc->pid);
 
+	int new_pid = 1;
+	while (pid_table[new_pid] != NULL) {
+		new_pid++; // probably will introduce bug if > 64 processes. 
+	}
+
 	struct proc *child_proc;
 	child_proc = create_proc("child_proc");
 	
@@ -92,12 +97,7 @@ sys_fork(int32_t *retval) {
 	// kprintf("child: %p\n", child_proc->p_filetable);
 	// kprintf("parent: %p\n", curproc->p_filetable);
 
-	i = 1;
-	while (pid_table[i] != NULL) {
-		i++; // probably will introduce bug if > 64 processes. 
-	}
-
-	child_proc->pid = i;
+	child_proc->pid = new_pid;
 	child_proc->parent_pid = curproc->pid;
 	child_proc->exitcode = -1;
 	child_proc->running = true;
