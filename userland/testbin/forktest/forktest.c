@@ -274,6 +274,7 @@ test(int nowait)
 				observed++;
 			}
 		}
+		printf("observed: %d ---- expected: %d\n", observed, expected);
 		if(observed != expected) {
 			// Failed
 			err(1, "Failed! Expected %d%cs..observed: %d\n", expected, character + char_idx, observed);

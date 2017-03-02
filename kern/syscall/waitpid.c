@@ -49,7 +49,7 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 	
 
 	(void)retval;
-	(void)status;
+	// (void)status;
 	(void)options;
 
 	// if pid DNE then fail.
@@ -92,6 +92,8 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 		}
 	}
 	*/	
+
+	*status = pid_table[pid]->exitcode;
 
 	// kprintf("oh ffs\n");
 	proc_destroy(pid_table[pid]);

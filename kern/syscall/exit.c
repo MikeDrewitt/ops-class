@@ -12,7 +12,6 @@ void
 sys__exit(int32_t *retval, int exitcode)
 {
 	(void)retval;
-	(void)exitcode;
 		
 
 	// The Lord says to set the exitcode to _MKWAIT_EXIT(_exitcode)
