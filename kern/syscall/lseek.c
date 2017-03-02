@@ -17,6 +17,9 @@ sys_lseek(int64_t *retval, int fd, off_t pos, int whence)
 	 *	update the offset position based on the whence 
 	 *	of the fd that's passed in.
 	 */
+	
+	spinlock_acquire(&curproc->p_lock);
+
 	if (curthread->t_proc->p_filetable[fd] == NULL) {
 		*retval = -1;
 		return EBADF;
@@ -58,5 +61,8 @@ sys_lseek(int64_t *retval, int fd, off_t pos, int whence)
 	}
 	
 	*retval = -1;
+
+	spinlock_release(&curproc->p_lock);
+
 	return EINVAL;
 }

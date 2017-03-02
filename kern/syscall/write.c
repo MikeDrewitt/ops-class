@@ -25,6 +25,9 @@ sys_write(int fd, const void *buf, size_t nbytes, int32_t *retval)
 	 * we need to write the stuff at buf into the file descriptor
 	 * that is passed in as fd. 
 	 */
+
+	spinlock_acquire(&curproc->p_lock);
+
 	int result;
 
 	// EBADF fd is not a valid file descriptor, or was not opened for writing 
@@ -52,9 +55,11 @@ sys_write(int fd, const void *buf, size_t nbytes, int32_t *retval)
 		*retval = -1;
 		return EIO;
 	}
-// u.uio_resid is updated based on how many bites are written during 
-// VOP_write
+	
 	*retval = nbytes - u.uio_resid;
 	curproc->p_filetable[fd]->offset += nbytes - u.uio_resid;
+	
+	spinlock_release(&curproc->p_lock);
+
 	return 0;
 }

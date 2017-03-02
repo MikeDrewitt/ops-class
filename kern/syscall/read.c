@@ -21,6 +21,9 @@
 ssize_t
 sys_read(int32_t *retval, int fd, void *buf, size_t buflen)
 {
+
+	spinlock_acquire(&curproc->p_lock);
+
 	int result;
 
 	// EBADF fd is not a valid file descriptor, or was not opened for writing 
@@ -52,6 +55,9 @@ sys_read(int32_t *retval, int fd, void *buf, size_t buflen)
 // VOP_write
 	*retval = buflen - u.uio_resid;
 	curproc->p_filetable[fd]->offset += buflen - u.uio_resid;
+
+	spinlock_release(&curproc->p_lock);
+
 	return 0;
 
 }

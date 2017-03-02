@@ -100,7 +100,9 @@ sys_fork(int32_t *retval) {
 	
 	thread_fork("child_thread", child_proc, (void *)fork_entry, child_tf, (unsigned long)child_addr);
 
-	kprintf("FORK => numthreads: %d\n", child_proc->p_numthreads);
+	// kprintf("...\n");
+
+	// kprintf("FORK => numthreads: %d\n", child_proc->p_numthreads);
 	// kprintf("FORK => child PID: %d\n",child_proc->pid);
 	// kprintf("FORK => parent PID: %d\n",child_proc->parent_pid);
 	// kprintf("FORK => child exitcode: %d\n",child_proc->exitcode);
@@ -111,5 +113,6 @@ sys_fork(int32_t *retval) {
 	*retval = child_proc->pid;
 
 	lock_release(curproc->p_full_lock);
+
 	return 0;
 }

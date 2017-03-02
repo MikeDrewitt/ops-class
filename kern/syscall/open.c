@@ -33,6 +33,8 @@ sys_open(int32_t *retval, const char *filename, int flags)
 	// (void)filename;
 	// (void)flags;
 
+	spinlock_acquire(&curproc->p_lock);
+
 	struct vnode *v;
 	struct file_table *file;
 
@@ -75,5 +77,8 @@ sys_open(int32_t *retval, const char *filename, int flags)
 	curthread->t_proc->p_filetable[file_descriptor] = file;
 
 	*retval = file_descriptor;
+	
+	spinlock_release(&curproc->p_lock);
+
 	return 0;
 }
