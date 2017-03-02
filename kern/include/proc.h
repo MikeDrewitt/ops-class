@@ -40,6 +40,9 @@
 #include <limits.h>
 #include <synch.h>
 #include <vnode.h>
+#include <lib.h>
+
+#include <mips/trapframe.h>
 
 struct addrspace;
 struct thread;
@@ -63,19 +66,25 @@ struct vnode;
  * without sleeping.
  */
 
-struct file_tabel {
+
+struct file_table {
     struct vnode *ft_vnode;
     struct lock *ft_lock;
 
     int flag;               /* read, write, read/write  */
     int offset;             /* position in the file */
 
+    int ref_counter;
 };
 
 struct proc {
 	char *p_name;			/* Name of this process */
-	struct spinlock p_lock;		/* Lock for this structure */
-	unsigned p_numthreads;		/* Number of threads in this process */
+
+    struct spinlock p_lock;		/* Lock for this structure */
+	struct lock *p_full_lock;
+	struct semaphore *p_sem;
+    
+    unsigned p_numthreads;		/* Number of threads in this process */
 
 	/* VM */
 	struct addrspace *p_addrspace;	/* virtual address space */
@@ -84,12 +93,23 @@ struct proc {
 	struct vnode *p_cwd;		/* current working directory */
 
     int pid;
-    struct file_tabel *p_filetabel[64];  /*     */
-	/* add more material here as needed */
+    int parent_pid;
+
+    int exitcode; 
+
+    bool running;
+
+    struct file_table *p_filetable[64];  /*     */
+	
+    /* add more material here as needed */
+    struct trapframe *p_tf;
 };
 
+struct proc *pid_table[64];
 /* This is the process structure for the kernel and for kernel-only threads. */
 extern struct proc *kproc;
+
+struct proc *create_proc(const char *name);
 
 /* Call once during system startup to allocate data structures. */
 void proc_bootstrap(void);

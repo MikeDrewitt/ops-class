@@ -1,0 +1,12 @@
+// Things to ask in office hours 2/17
+
+	things to tell tim:
+		blocking in the init proccess
+		somehow also calls waitpid at some point.
+
+		All orphaned procs could be adopted via the init proc.
+
+	In close we never do VFS_close
+	
+
+

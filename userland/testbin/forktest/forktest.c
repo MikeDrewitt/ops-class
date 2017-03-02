@@ -188,6 +188,7 @@ test(int nowait)
 		// 0, 1, 2 are stdin, stdout, stderr
 		err(1, "Failed to open file to write data into\n");
 	}
+	
 
 	pid0 = dofork();
 	nprintf(".");
@@ -273,6 +274,7 @@ test(int nowait)
 				observed++;
 			}
 		}
+		printf("observed: %d ---- expected: %d\n", observed, expected);
 		if(observed != expected) {
 			// Failed
 			err(1, "Failed! Expected %d%cs..observed: %d\n", expected, character + char_idx, observed);

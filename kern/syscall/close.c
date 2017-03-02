@@ -26,19 +26,23 @@
 int
 sys_close(int32_t *retval, int fd)
 {
-	if (fd < 0 || curthread->t_proc->p_filetabel[fd] == NULL) {
+
+
+	if (fd < 0 || curthread->t_proc->p_filetable[fd] == NULL) {
 		*retval = -1;
 		return EBADF;
 	}
 	
-	lock_destroy(curthread->t_proc->p_filetabel[fd]->ft_lock);
+	lock_destroy(curthread->t_proc->p_filetable[fd]->ft_lock);
 
-	curthread->t_proc->p_filetabel[fd]->flag = 0;
-	curthread->t_proc->p_filetabel[fd]->offset = 0;
+	curthread->t_proc->p_filetable[fd]->flag = 0;
+	curthread->t_proc->p_filetable[fd]->offset = 0;
 
-	kfree(curthread->t_proc->p_filetabel[fd]);
-	curthread->t_proc->p_filetabel[fd] = NULL;
+	kfree(curthread->t_proc->p_filetable[fd]);
+	curthread->t_proc->p_filetable[fd] = NULL;
 
 	*retval = 0;
+	
+	
 	return 0;
 }

@@ -89,7 +89,17 @@ proc_create(const char *name)
 	/* VFS fields */
 	proc->p_cwd = NULL;
 
+	// best place to initialize the lock?
+	proc->p_full_lock = lock_create("proc-lock");
+	proc->p_sem = sem_create("proc-sem", 0);
+	
 	return proc;
+}
+
+struct proc *
+create_proc(const char *name)
+{
+	return proc_create(name);
 }
 
 /*
@@ -172,10 +182,40 @@ proc_destroy(struct proc *proc)
 		as_destroy(as);
 	}
 
+	// decrement refcounter
+	// close file if refcounter == 0
+
+		
+
 	KASSERT(proc->p_numthreads == 0);
 	spinlock_cleanup(&proc->p_lock);
 
+	lock_destroy(proc->p_full_lock);
+	sem_destroy(proc->p_sem);
+
+	bzero(proc->p_tf, sizeof(struct trapframe));
+	// kfree(proc->p_tf);
+
+	int i;
+	for (i = 0; i < 64; i++) {
+		if (proc->p_filetable[i] != NULL) {
+			proc->p_filetable[i]->ref_counter -= 1;
+			
+			if (proc->p_filetable[i]->ref_counter == 0) {
+				lock_destroy(proc->p_filetable[i]->ft_lock);
+
+				proc->p_filetable[i]->flag = 0;
+				proc->p_filetable[i]->offset = 0;
+
+				// kfree(proc->p_filetable[i]);
+				proc->p_filetable[i] = NULL;
+			}
+		}
+	}
+
+	// kprintf("one\n");
 	kfree(proc->p_name);
+	// kprintf("two\n");
 	kfree(proc);
 }
 
@@ -186,12 +226,11 @@ void
 proc_bootstrap(void)
 {
 	kproc = proc_create("[kernel]");
-	
-	/*	
-	kproc->p_ft[0] = STDIN;
-	kproc->p_ft[1] = STDOUT;
-	kproc->p_ft[2] = STDERR;
-	*/
+
+	kproc->pid = 1;
+	kproc->running = true;
+
+	pid_table[1] = kproc;
 
 	if (kproc == NULL) {
 		panic("proc_create for kproc failed\n");
@@ -237,17 +276,17 @@ proc_create_runprogram(const char *name)
 	// all entries in 64 array.
 	int i;
 	for (i = 0; i < 64; i++) {
-		newproc->p_filetabel[i] = 0;
+		newproc->p_filetable[i] = 0;
 	} 
 
 	struct vnode *standin;
 	struct vnode *standout;
 	struct vnode *standerr;
 
-	struct file_tabel *in_file;
-	struct file_tabel *out_file;
-	struct file_tabel *err_file;
-	
+	struct file_table *in_file;
+	struct file_table *out_file;
+	struct file_table *err_file;
+
 	in_file = kmalloc(sizeof(*in_file));
 	out_file = kmalloc(sizeof(*out_file));
 	err_file = kmalloc(sizeof(*err_file));	
@@ -255,7 +294,7 @@ proc_create_runprogram(const char *name)
 	in_file->ft_lock = lock_create("in_lock");
 	out_file->ft_lock = lock_create("out_lock");	
 	err_file->ft_lock = lock_create("err_lock");
-	
+
 	in_file->flag = O_RDONLY;
 	out_file->flag = O_WRONLY;	
 	err_file->flag = O_WRONLY;
@@ -263,6 +302,10 @@ proc_create_runprogram(const char *name)
 	in_file->offset = 0;
 	out_file->offset = 0;	
 	err_file->offset = 0;
+
+	in_file->ref_counter = 1;
+	out_file->ref_counter = 1;
+	err_file->ref_counter = 1;
 
 	int in_result;
 	int out_result;
@@ -291,10 +334,17 @@ proc_create_runprogram(const char *name)
 	out_file->ft_vnode = standout;	
 	err_file->ft_vnode = standerr;
 
-	newproc->p_filetabel[0] = in_file;
-	newproc->p_filetabel[1] = out_file;
-	newproc->p_filetabel[2] = err_file;
+	newproc->p_filetable[0] = in_file;
+	newproc->p_filetable[1] = out_file;
+	newproc->p_filetable[2] = err_file;
 
+	newproc->pid = 2;
+	newproc->parent_pid = 1;
+
+	newproc->exitcode = -1;
+	newproc->running = true;
+
+	pid_table[2] = newproc;
 
 	return newproc;
 }

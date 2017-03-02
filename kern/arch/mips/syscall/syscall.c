@@ -33,6 +33,8 @@
 #include <current.h>
 #include <syscall.h>
 #include <copyinout.h>
+#include <addrspace.h>
+#include <proc.h>
 
 #include <kern/errno.h>
 #include <kern/syscall.h>
@@ -51,7 +53,7 @@
  * if the first argument is 32-bit and the second is 64-bit, a1 is
  * unused.
  *
- * This much is the same as the calling conventions for ordinary
+ * This much is the same as the calling convpid_t sys_fork();tions for ordinary
  * function calls. In addition, the system call number is passed in
  * the v0 register.
  *
@@ -86,10 +88,12 @@ syscall(struct trapframe *tf)
 	int64_t retval_long;
 	int64_t  full_pos;
 	int seek = 0;
-
+	
 	KASSERT(curthread != NULL);
 	KASSERT(curthread->t_curspl == 0);
 	KASSERT(curthread->t_iplhigh_count == 0);
+	
+	curproc->p_tf = tf;
 
 	callno = tf->tf_v0;
 
@@ -104,8 +108,23 @@ syscall(struct trapframe *tf)
 
 	retval = 0;
 
+	// kprintf("current trap status: %x\n", tf->tf_status);
+	// kprintf("call to syscall %d\n", callno);
+
 	switch (callno) {
-	    case SYS_reboot:
+		case SYS_fork:
+			err = sys_fork(&retval);
+		break;
+
+		case SYS_waitpid:
+			err = sys_waitpid(&retval, (pid_t)tf->tf_a0, (int *)tf->tf_a1, (int)tf->tf_a2);
+		break;
+
+		case SYS_getpid:
+			err = sys_getpid(&retval);
+		break;
+
+		case SYS_reboot:
 			err = sys_reboot(tf->tf_a0);
 		break;
 
@@ -130,6 +149,13 @@ syscall(struct trapframe *tf)
 				 (userptr_t)tf->tf_a1);
 		break;
 
+		case SYS__exit:
+			/* Not sure what to assign err to here, so I just zero it out  */
+			sys__exit(&retval, (int) tf->tf_a0);
+			// kprintf("RETURN FROM EXIT: current trap cause: %x\n", tf->tf_cause);
+			err = 0;
+		break;
+			
 	    case SYS_lseek:
 			full_pos = tf->tf_a2;
 			full_pos = full_pos << 32;
@@ -140,8 +166,8 @@ syscall(struct trapframe *tf)
 
 			err = sys_lseek(&retval_long ,(int)tf->tf_a0, (off_t)full_pos,(int) whence);	
 			seek = 1;
-
 		break;
+		
 		/* Add stuff here */
 
 	    default:
@@ -157,6 +183,9 @@ syscall(struct trapframe *tf)
 		 * userlevel to a return value of -1 and the error
 		 * code in errno.
 		 */
+
+
+
 		tf->tf_v0 = err;
 		tf->tf_a3 = 1;      /* signal an error */
 	}
@@ -188,6 +217,9 @@ syscall(struct trapframe *tf)
 	/* ...or leak any spinlocks */
 	KASSERT(curthread->t_iplhigh_count == 0);
 
+	// kprintf("END SYSCALL: current trap cause: %x\n", tf->tf_cause);
+	
+	// kprintf("end syscall %d\n", callno);
 	// kprintf("v0: %lld\n", (long long int)tf->tf_v0);
 	// kprintf("v1: %lld\n", (long long int)tf->tf_v1);
 	// kprintf("finish syscall\n");
@@ -201,8 +233,25 @@ syscall(struct trapframe *tf)
  *
  * Thus, you can trash it and do things another way if you prefer.
  */
+
 void
-enter_forked_process(struct trapframe *tf)
-{
-	(void)tf;
+enter_forked_process(void *data1, unsigned long data2)
+{		
+	struct trapframe tf;
+
+	memcpy(&tf, curproc->p_tf, sizeof(*curproc->p_tf));
+
+	tf.tf_v0 = 0;
+	tf.tf_a3 = 0;
+	tf.tf_epc += 4;
+
+	kprintf("trap cause: %x\n", tf.tf_cause);
+
+	as_activate();
+	mips_usermode(&tf);
+
+	(void)data1;
+	(void)data2;
+
+	return;
 }
