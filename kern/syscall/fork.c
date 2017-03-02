@@ -82,8 +82,15 @@ sys_fork(int32_t *retval) {
 		}
 		
 		child_proc->p_filetable[i] = curproc->p_filetable[i];
+
+		// kprintf("child: %p\n", child_proc->p_filetable[i]);
+		// kprintf("parent: %p\n", curproc->p_filetable[i]);
+
 		i++;
 	}
+
+	// kprintf("child: %p\n", child_proc->p_filetable);
+	// kprintf("parent: %p\n", curproc->p_filetable);
 
 	i = 1;
 	while (pid_table[i] != NULL) {
@@ -100,7 +107,7 @@ sys_fork(int32_t *retval) {
 	
 	thread_fork("child_thread", child_proc, (void *)fork_entry, child_tf, (unsigned long)child_addr);
 
-	 // kprintf("...\n");
+	// kprintf("...\n");
 
 	// kprintf("FORK => numthreads: %d\n", child_proc->p_numthreads);
 	// kprintf("FORK => child PID: %d\n",child_proc->pid);

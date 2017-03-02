@@ -34,6 +34,8 @@ sys_read(int32_t *retval, int fd, void *buf, size_t buflen)
 	struct iovec iov;
 	struct uio u;
 
+	lock_acquire(curproc->p_filetable[fd]->ft_lock);
+
 	iov.iov_ubase = (userptr_t)buf;
 	iov.iov_len = buflen;
 	u.uio_iov = &iov;
@@ -46,6 +48,7 @@ sys_read(int32_t *retval, int fd, void *buf, size_t buflen)
 
 	result = VOP_READ(curproc->p_filetable[fd]->ft_vnode, &u);
 
+
 	if(result){
 		*retval = -1;
 		return EIO;
@@ -55,6 +58,7 @@ sys_read(int32_t *retval, int fd, void *buf, size_t buflen)
 	*retval = buflen; //- u.uio_resid;
 	curproc->p_filetable[fd]->offset += buflen - u.uio_resid;
 
+	lock_release(curproc->p_filetable[fd]->ft_lock);
 
 	return 0;
 

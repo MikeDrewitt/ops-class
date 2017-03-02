@@ -36,7 +36,11 @@ sys_write(int fd, const void *buf, size_t nbytes, int32_t *retval)
 	}
 
 	struct iovec iov;
-	struct uio u;	
+	struct uio u;
+
+	lock_acquire(curproc->p_filetable[fd]->ft_lock);
+
+	// kprintf("%s\n",(char *)buf);
 
 	iov.iov_ubase = (userptr_t)buf;
 	iov.iov_len = nbytes;
@@ -50,6 +54,7 @@ sys_write(int fd, const void *buf, size_t nbytes, int32_t *retval)
 
 	result = VOP_WRITE(curthread->t_proc->p_filetable[fd]->ft_vnode, &u);
 
+
 	if(result){
 		*retval = -1;
 		return EIO;
@@ -59,6 +64,7 @@ sys_write(int fd, const void *buf, size_t nbytes, int32_t *retval)
 	*retval = nbytes; // - u.uio_resid;
 	curproc->p_filetable[fd]->offset += nbytes - u.uio_resid;
 	
+	lock_release(curproc->p_filetable[fd]->ft_lock);
 
 	return 0;
 }
