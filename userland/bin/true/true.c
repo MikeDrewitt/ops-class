@@ -43,7 +43,8 @@ main(void)
 	if (res) {
 		
 		// printf("Parent\n");
-		waitpid(res, 0, 0);	
+		int status = 0;
+		waitpid(res, &status, 0);	
 
 	}
 	else {	

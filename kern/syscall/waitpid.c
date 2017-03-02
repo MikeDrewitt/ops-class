@@ -68,31 +68,6 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 	// Wait here until _exit() is called by pid
 	P(pid_table[pid]->p_sem);
 
-	/*
-	lock_destroy(pid_table[pid]->p_full_lock);
-	sem_destroy(pid_table[pid]->p_sem);
-
-	bzero(pid_table[pid]->p_tf, sizeof(struct trapframe));
-	// kfree(proc->p_tf);
-
-	int i;
-	for (i = 0; i < 64; i++) {
-		if (pid_table[pid]->p_filetable[i] != NULL) {
-			pid_table[pid]->p_filetable[i]->ref_counter -= 1;
-			
-			if (pid_table[pid]->p_filetable[i]->ref_counter == 0) {
-				lock_destroy(pid_table[pid]->p_filetable[i]->ft_lock);
-
-				pid_table[pid]->p_filetable[i]->flag = 0;
-				pid_table[pid]->p_filetable[i]->offset = 0;
-
-				// kfree(proc->p_filetable[i]);
-				pid_table[pid]->p_filetable[i] = NULL;
-			}
-		}
-	}
-	*/	
-
 	*status = pid_table[pid]->exitcode;
 
 	// kprintf("oh ffs\n");
