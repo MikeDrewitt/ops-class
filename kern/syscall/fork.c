@@ -53,7 +53,8 @@ sys_fork(int32_t *retval) {
 	 * 
 	 */
 
-	lock_acquire(curproc->p_full_lock);
+
+	int kill;
 
 	/*
 	 * if we never see an open spot we need
@@ -75,12 +76,18 @@ sys_fork(int32_t *retval) {
 	}
 
 	if (!open_space) {
+		// kprintf("no space\n");
 		*retval = ENPROC;
 		return -1;
 	}
 
 	struct proc *child_proc;
 	child_proc = create_proc("child_proc");
+
+	if (child_proc == NULL) {
+		*retval = ENOMEM;
+		return -1;
+	}
 	
 	struct addrspace *child_addr;
 	struct trapframe *child_tf;
@@ -95,11 +102,19 @@ sys_fork(int32_t *retval) {
 	//copys trap frame 
 	bzero(child_tf, sizeof(struct trapframe));
 	memcpy(child_tf, curproc->p_tf, sizeof(struct trapframe));
+	
 	child_proc->p_tf = child_tf;
 
 
+
 	//copy parent address space into child proc
-	as_copy(curproc->p_addrspace, &child_addr);
+	kill = as_copy(curproc->p_addrspace, &child_addr);	
+	if (kill) {
+		kfree(child_tf);
+		*retval = ENOMEM;
+		return -1;
+	}
+	
 	child_proc->p_addrspace = child_addr;
 
 	int i = 0;
@@ -131,6 +146,7 @@ sys_fork(int32_t *retval) {
 		child_proc->exitcode = -1;
 		child_proc->running = true;
 
+		// kprintf("\n");
 
 		pid_table[new_pid] = child_proc;
 	}
@@ -141,7 +157,12 @@ sys_fork(int32_t *retval) {
 		return -1;
 	}
 	
-	thread_fork("child_thread", child_proc, (void *)fork_entry, child_tf, (unsigned long)child_addr);
+	kill = thread_fork("child_thread", child_proc, (void *)fork_entry, child_tf, (unsigned long)child_addr);
+	if (kill) {
+		kfree(child_tf);
+		*retval = ENOMEM;
+		return -1;
+	}
 
 	// kprintf("FORK => numthreads: %d\n", child_proc->p_numthreads);
 	// kprintf("FORK => child PID: %d\n",child_proc->pid);
@@ -154,7 +175,6 @@ sys_fork(int32_t *retval) {
 	*retval = child_proc->pid;
 	// kprintf("%p\n", NULL);
 
-	lock_release(curproc->p_full_lock);
 
 	return 0;
 }
