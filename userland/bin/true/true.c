@@ -38,17 +38,9 @@
 int
 main(void)
 {
-	int res = fork();
-	
-	if (res) {
-		
-		// printf("Parent\n");
-		int status = 0;
-		waitpid(res, &status, 0);	
 
-	}
-	else {	
-		// printf("Child\n");
+	while (1) {
+		fork();
 	}
 	
 	exit(0);

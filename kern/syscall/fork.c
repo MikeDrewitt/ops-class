@@ -10,7 +10,7 @@
 
 #include <kern/fcntl.h>
 #include <kern/wait.h>
-
+#include <kern/errno.h>
 
 static 
 void
@@ -53,31 +53,69 @@ sys_fork(int32_t *retval) {
 	 * 
 	 */
 
-	lock_acquire(curproc->p_full_lock);
+
+	int kill;
+
+	/*
+	 * if we never see an open spot we need
+	 * to defuse the bomb. 
+	 *
+	 * There's a bomb when no spots are open
+	 * ie: all_indexes != NULL
+	 */
 
 	// kprintf("FORK -> My ID: %d\n", curproc->pid);
 
-	int new_pid = 1;
-	while (pid_table[new_pid] != NULL) {
-		new_pid++; // probably will introduce bug if > 64 processes. 
+	int bomb;
+	int open_space = 0;
+	for (bomb = 0; bomb < 64; bomb++) {
+		if (pid_table[bomb] == NULL) {
+			// there's an open space
+			open_space = 1;
+		}
 	}
 
+	if (!open_space) {
+		// kprintf("no space\n");
+		*retval = ENPROC;
+		return -1;
+	}
+
+	// LEAKING?
 	struct proc *child_proc;
 	child_proc = create_proc("child_proc");
+
+	if (child_proc == NULL) {
+		*retval = ENOMEM;
+		return -1;
+	}
 	
 	struct addrspace *child_addr;
 	struct trapframe *child_tf;
 
 	child_tf = kmalloc(sizeof(struct trapframe));
 
+	if (child_tf == NULL) {
+		*retval = ENOMEM;
+		return -1;
+	}
+
 	//copys trap frame 
 	bzero(child_tf, sizeof(struct trapframe));
 	memcpy(child_tf, curproc->p_tf, sizeof(struct trapframe));
+	
 	child_proc->p_tf = child_tf;
 
 
+
 	//copy parent address space into child proc
-	as_copy(curproc->p_addrspace, &child_addr);
+	kill = as_copy(curproc->p_addrspace, &child_addr);	
+	if (kill) {
+		kfree(child_tf);
+		*retval = ENOMEM;
+		return -1;
+	}
+	
 	child_proc->p_addrspace = child_addr;
 
 	int i = 0;
@@ -97,17 +135,35 @@ sys_fork(int32_t *retval) {
 	// kprintf("child: %p\n", child_proc->p_filetable);
 	// kprintf("parent: %p\n", curproc->p_filetable);
 
-	child_proc->pid = new_pid;
-	child_proc->parent_pid = curproc->pid;
-	child_proc->exitcode = -1;
-	child_proc->running = true;
 
+	int new_pid = 1;
+	while (pid_table[new_pid] != NULL && new_pid < 64 ) {
+		new_pid++; // probably will introduce bug if > 64 processes. 
+	}
 
-	pid_table[i] = child_proc;
+	if (pid_table[new_pid] == NULL) {	
+		child_proc->pid = new_pid;
+		child_proc->parent_pid = curproc->pid;
+		child_proc->exitcode = -1;
+		child_proc->running = true;
+
+		// kprintf("\n");
+
+		pid_table[new_pid] = child_proc;
+	}
+	else {
+		// panic("You tried to overwrite another proccess.\n");
+		// kprintf("No Room!\n");
+		*retval = ENPROC;
+		return -1;
+	}
 	
-	thread_fork("child_thread", child_proc, (void *)fork_entry, child_tf, (unsigned long)child_addr);
-
-	// kprintf("...\n");
+	kill = thread_fork("child_thread", child_proc, (void *)fork_entry, child_tf, (unsigned long)child_addr);
+	if (kill) {
+		kfree(child_tf);
+		*retval = ENOMEM;
+		return -1;
+	}
 
 	// kprintf("FORK => numthreads: %d\n", child_proc->p_numthreads);
 	// kprintf("FORK => child PID: %d\n",child_proc->pid);
@@ -118,8 +174,8 @@ sys_fork(int32_t *retval) {
 	// kprintf("parent cause: %x\n", curproc->p_tf->tf_cause);
 
 	*retval = child_proc->pid;
+	// kprintf("%p\n", NULL);
 
-	lock_release(curproc->p_full_lock);
 
 	return 0;
 }

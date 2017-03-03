@@ -38,6 +38,7 @@
 #include <wchan.h>
 #include <thread.h>
 #include <current.h>
+#include <proc.h>
 #include <synch.h>
 
 ////////////////////////////////////////////////////////////
@@ -183,13 +184,17 @@ lock_acquire(struct lock *lock)
 	//KASSERT(curthread->t_in_interrupt == false);
 	
 	spinlock_acquire(&lock->lock_lock);
-	
+
+
 	while (lock->lock_thread != NULL) {
+		// kprintf("proc: %d is waiting\n", curproc->pid);
 		wchan_sleep(lock->lock_wchan, &lock->lock_lock);
 	}
-	
+
+
 	lock->lock_thread = curthread;
 
+	// kprintf("++ proc: %d acquired the lock\n", curproc->pid);
 	spinlock_release(&lock->lock_lock);
 	/* Call this (atomically) before waiting for a lock */
 	//HANGMAN_WAIT(&curthread->t_hangman, &lock->lk_hangman);
@@ -212,6 +217,7 @@ lock_release(struct lock *lock)
 	spinlock_acquire(&lock->lock_lock);
 		
 	lock->lock_thread = NULL;
+	// kprintf("-- proc: %d released the lock\n", curproc->pid);
 	wchan_wakeone(lock->lock_wchan, &lock->lock_lock);
 	/* Call this (atomically) when the lock is released */
 	//HANGMAN_RELEASE(&curthread->t_hangman, &lock->lk_hangman);

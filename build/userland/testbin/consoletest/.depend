@@ -7,6 +7,7 @@ $(MYBUILDDIR)/consoletest.o: \
  $(INSTALLTOP)/include/sys/null.h \
  $(INSTALLTOP)/include/stdio.h \
  $(INSTALLTOP)/include/string.h \
+ $(INSTALLTOP)/include/time.h \
  $(INSTALLTOP)/include/unistd.h \
  $(INSTALLTOP)/include/sys/cdefs.h \
  $(INSTALLTOP)/include/sys/types.h \
@@ -17,6 +18,8 @@ $(MYBUILDDIR)/consoletest.o: \
  $(INSTALLTOP)/include/kern/time.h \
  $(INSTALLTOP)/include/kern/unistd.h \
  $(INSTALLTOP)/include/kern/wait.h \
+ $(INSTALLTOP)/include/errno.h \
+ $(INSTALLTOP)/include/kern/errno.h \
  $(INSTALLTOP)/include/err.h \
  $(INSTALLTOP)/include/test161/test161.h \
  $(INSTALLTOP)/include/kern/test161.h \
