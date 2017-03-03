@@ -396,6 +396,7 @@ file      syscall/lseek.c
 file      syscall/fork.c
 file      syscall/waitpid.c
 file      syscall/getpid.c
+file      syscall/execv.c
 
 #
 # Startup and initialization
