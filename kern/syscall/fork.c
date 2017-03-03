@@ -10,7 +10,7 @@
 
 #include <kern/fcntl.h>
 #include <kern/wait.h>
-
+#include <kern/errno.h>
 
 static 
 void
@@ -92,18 +92,23 @@ sys_fork(int32_t *retval) {
 	// kprintf("child: %p\n", child_proc->p_filetable);
 	// kprintf("parent: %p\n", curproc->p_filetable);
 
-	i = 1;
-	while (pid_table[i] != NULL) {
-		i++; // probably will introduce bug if > 64 processes. 
+	int new_pid = 1;
+	while (pid_table[new_pid] != NULL) {
+		new_pid++; // probably will introduce bug if > 64 processes. 
+
+		if (new_pid == 64) {
+			*retval = ENPROC;
+			return -1;
+		}
 	}
 
-	child_proc->pid = i;
+	child_proc->pid = new_pid;
 	child_proc->parent_pid = curproc->pid;
 	child_proc->exitcode = -1;
 	child_proc->running = true;
 
 
-	pid_table[i] = child_proc;
+	pid_table[new_pid] = child_proc;
 	
 	thread_fork("child_thread", child_proc, (void *)fork_entry, child_tf, (unsigned long)child_addr);
 
