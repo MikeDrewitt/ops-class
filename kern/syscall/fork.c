@@ -81,6 +81,7 @@ sys_fork(int32_t *retval) {
 		return -1;
 	}
 
+	// LEAKING?
 	struct proc *child_proc;
 	child_proc = create_proc("child_proc");
 
@@ -134,7 +135,6 @@ sys_fork(int32_t *retval) {
 	// kprintf("child: %p\n", child_proc->p_filetable);
 	// kprintf("parent: %p\n", curproc->p_filetable);
 
-	//  LEAKING
 	int new_pid = 1;
 	while (pid_table[new_pid] != NULL && new_pid < 64 ) {
 		new_pid++; // probably will introduce bug if > 64 processes. 
