@@ -55,7 +55,29 @@ sys_fork(int32_t *retval) {
 
 	lock_acquire(curproc->p_full_lock);
 
+	/*
+	 * if we never see an open spot we need
+	 * to defuse the bomb. 
+	 *
+	 * There's a bomb when no spots are open
+	 * ie: all_indexes != NULL
+	 */
+
 	// kprintf("FORK -> My ID: %d\n", curproc->pid);
+
+	int bomb;
+	int open_space = 0;
+	for (bomb = 0; bomb < 64; bomb++) {
+		if (pid_table[bomb] == NULL) {
+			// there's an open space
+			open_space = 1;
+		}
+	}
+
+	if (!open_space) {
+		*retval = ENPROC;
+		return -1;
+	}
 
 	struct proc *child_proc;
 	child_proc = create_proc("child_proc");
@@ -64,6 +86,11 @@ sys_fork(int32_t *retval) {
 	struct trapframe *child_tf;
 
 	child_tf = kmalloc(sizeof(struct trapframe));
+
+	if (child_tf == NULL) {
+		*retval = ENOMEM;
+		return -1;
+	}
 
 	//copys trap frame 
 	bzero(child_tf, sizeof(struct trapframe));
@@ -92,27 +119,29 @@ sys_fork(int32_t *retval) {
 	// kprintf("child: %p\n", child_proc->p_filetable);
 	// kprintf("parent: %p\n", curproc->p_filetable);
 
+	//  LEAKING
 	int new_pid = 1;
-	while (pid_table[new_pid] != NULL) {
+	while (pid_table[new_pid] != NULL && new_pid < 64 ) {
 		new_pid++; // probably will introduce bug if > 64 processes. 
-
-		if (new_pid == 64) {
-			*retval = ENPROC;
-			return -1;
-		}
 	}
 
-	child_proc->pid = new_pid;
-	child_proc->parent_pid = curproc->pid;
-	child_proc->exitcode = -1;
-	child_proc->running = true;
+	if (pid_table[new_pid] == NULL) {	
+		child_proc->pid = new_pid;
+		child_proc->parent_pid = curproc->pid;
+		child_proc->exitcode = -1;
+		child_proc->running = true;
 
 
-	pid_table[new_pid] = child_proc;
+		pid_table[new_pid] = child_proc;
+	}
+	else {
+		// panic("You tried to overwrite another proccess.\n");
+		// kprintf("No Room!\n");
+		*retval = ENPROC;
+		return -1;
+	}
 	
 	thread_fork("child_thread", child_proc, (void *)fork_entry, child_tf, (unsigned long)child_addr);
-
-	// kprintf("...\n");
 
 	// kprintf("FORK => numthreads: %d\n", child_proc->p_numthreads);
 	// kprintf("FORK => child PID: %d\n",child_proc->pid);
@@ -123,6 +152,7 @@ sys_fork(int32_t *retval) {
 	// kprintf("parent cause: %x\n", curproc->p_tf->tf_cause);
 
 	*retval = child_proc->pid;
+	// kprintf("%p\n", NULL);
 
 	lock_release(curproc->p_full_lock);
 

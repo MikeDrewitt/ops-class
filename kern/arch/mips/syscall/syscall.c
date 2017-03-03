@@ -149,6 +149,12 @@ syscall(struct trapframe *tf)
 				 (userptr_t)tf->tf_a1);
 		break;
 
+		case SYS_execv:
+			retval = 0;
+			err = 0;
+			kprintf("exec called\n");
+		break;
+
 		case SYS__exit:
 			/* Not sure what to assign err to here, so I just zero it out  */
 			sys__exit(&retval, (int) tf->tf_a0);

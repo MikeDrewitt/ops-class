@@ -80,6 +80,7 @@ main(void)
 
 	while (1) {
 		fork();
+		// printf("%d, ", ret);
 		// Only parent gets to print
 		if(getpid() == parent_pid) {
 			TEST161_LPROGRESS(0);
@@ -95,6 +96,7 @@ main(void)
 				// the same page we warmed up earlier.
 				secprintf(SECRET, LOCAL_SUCCESS, "/testbin/forkbomb");
 			}
+			// printf("end parents time\n");
 		}
 
 		pid = getpid();

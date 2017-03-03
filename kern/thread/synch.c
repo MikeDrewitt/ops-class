@@ -187,7 +187,7 @@ lock_acquire(struct lock *lock)
 
 
 	while (lock->lock_thread != NULL) {
-		kprintf("proc: %d is waiting\n", curproc->pid);
+		// kprintf("proc: %d is waiting\n", curproc->pid);
 		wchan_sleep(lock->lock_wchan, &lock->lock_lock);
 	}
 
