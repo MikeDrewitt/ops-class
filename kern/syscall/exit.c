@@ -36,8 +36,8 @@ sys__exit(int32_t *retval, int exitcode)
 	// kprintf("EXIT => thread_count: %d\n", curproc->p_numthreads);
 
 	lock_release(curproc->p_full_lock);
-
 	V(curproc->p_sem);
+
 	thread_exit();
 	
 

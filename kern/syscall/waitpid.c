@@ -48,7 +48,7 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 
 	
 
-	(void)retval;
+	// (void)retval;
 	// (void)status;
 	(void)options;
 
@@ -68,7 +68,9 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 	// Wait here until _exit() is called by pid
 	P(pid_table[pid]->p_sem);
 
-	*status = pid_table[pid]->exitcode;
+	if (status != NULL) {
+		*status = pid_table[pid]->exitcode;
+	}
 
 	// kprintf("oh ffs\n");
 	proc_destroy(pid_table[pid]);

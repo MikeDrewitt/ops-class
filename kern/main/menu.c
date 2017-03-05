@@ -144,6 +144,16 @@ common_prog(int nargs, char **args)
 	 * once you write the code for handling that.
 	 */
 
+
+	kprintf("pid: %d\n", proc->pid);
+
+	int retval;
+	sys_waitpid(&retval, proc->pid, NULL, 0);
+	kprintf("RETVAL: %d\n", retval);
+	if (retval) {
+		return retval;
+	}
+
 	// Wait for all threads to finish cleanup, otherwise khu be a bit behind,
 	// especially once swapping is enabled.
 	thread_wait_for_count(tc);
