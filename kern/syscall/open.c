@@ -58,7 +58,6 @@ sys_open(int32_t *retval, const char *filename, int flags)
 	int result;
 	char name_copy[128];
 
-
 	copyinstr((const_userptr_t)filename, name_copy, 128, 0);
 	result = vfs_open(name_copy, flags, 0664, &v);		
 

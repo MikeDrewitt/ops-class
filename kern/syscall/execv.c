@@ -7,6 +7,7 @@
 #include <vfs.h>
 #include <syscall.h>
 #include <test.h>
+#include <copyinout.h>
 
 #include <kern/fcntl.h>
 #include <kern/errno.h>
@@ -19,19 +20,25 @@ sys_execv(int32_t *retval, const char *program, char **args)
 	// (void)program;
 	(void)args;
 
+	// kprintf("CALL TO EXEC CONNECTED\n");
+
 	struct addrspace *as;
 	struct vnode *v;
 	vaddr_t entrypoint, stackptr;
 	int result;
 
 	/* Open the file. */
-	result = vfs_open((char *)program, O_RDONLY, 0, &v);
+	char kernel_progname[128];
+	copyinstr((const_userptr_t)program, kernel_progname, 128, 0);
+
+	// kprintf("progname: %s\n", kernel_progname);
+	result = vfs_open(kernel_progname, O_RDONLY, 0, &v);
 	if (result) {
 		return result;
 	}
 
 	/* We should be a new process. */
-	KASSERT(proc_getas() == NULL);
+	// KASSERT(proc_getas() == NULL);
 
 	/* Create a new address space. */
 	as = as_create();

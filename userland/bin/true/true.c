@@ -35,13 +35,20 @@
  * true - succeed.
  */
 
+
 int
 main(void)
 {
 
-	while (1) {
-		fork();
-	}
-	
-	exit(0);
+
+	const char *args[20];
+
+	args[0] = "/bin/false";
+	args[1] = NULL;
+
+	const char buf[10] = "/bin/false";
+
+	execv(buf, (char **)args);
+
+	return 1;
 }
