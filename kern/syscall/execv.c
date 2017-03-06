@@ -19,52 +19,36 @@ sys_execv(int32_t *retval, const char *program, char **args)
 {
 
 //TODO:
-//-instanciate kernel buffer to max_buf_len (64k)
-//kernel buffer is a char  **kbuff
+//-instanciate kernel buffer to max_buf_len (64k)                             X
+//kernel buffer is a char  **kbuff                                            X
 //
 //-loop through args and copy all the arguments into kernel buffer 
 //-stop looping when you get to null
 //-be sure to include padding to make sure the length of the argument is 
 //devisible by 4 (add in NULL)
 //
-	
+
+
+
+
+	bzero(k_buff, ARG_MAX);
+	int arg_start = 0;
+
+	while(*args != NULL){
+		kprintf("args=> %s    address=> %p\n",*args, args);
+		copyin((const_userptr_t)*args, (char *)k_buff, 4);
+		kprintf("k_buff=> %s       address=> %p\n",(char *)k_buff, k_buff);
+		//*k_buff = (void *)*args;
+		k_buff += 4;
+		args++;
+		arg_start++;
+	}
 
 	(void)retval;
 	// (void)program;
-	// (void)args;
-
 	// kprintf("CALL TO EXEC CONNECTED\n");
 	
 	/* Cleaning out the kernel buffer for this call of EXECV */
-	bzero(kern_buff, ARG_MAX);
-	int args_start = 0;
-
-	while (*args != NULL) {
-
-		kern_buff[args_start] = *args;
-
-		args_start += 1;
-		args += 1;
-	}
-
-	args -= args_start;
-
-	while (*args != NULL) {
-		char *curstring = *args;
-		while (*curstring != 0) {
-			kern_buf[args_start] = (char *)*curstring;
-			args_start += 1;
-			curstring += 1;
-		}
-	}
-
-	int i = 0;
-	while (kern_buff[i] != 0) {
-		kprintf("kargs: %s, is %d bytes\n", kern_buff[i], sizeof(kern_buff[i]));
-		i += 1;
-	}
-
-
 /*
 	while (kern_buff != NULL) {
 		kprintf("args: %s, is at: %p\n", kern_buff, &kern_buff);
