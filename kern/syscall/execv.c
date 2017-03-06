@@ -32,19 +32,14 @@ sys_execv(int32_t *retval, const char *program, char **args)
 	
 	// kprintf("CALL TO EXEC CONNECTED\n");
 
-	bzero(k_buff, ARG_MAX);
+	bzero(kern_buffer, ARG_MAX);
 	int arg_start = 0;
 
 	while (*args != NULL) {
-		kprintf("arg: %s adr: %p\n", *args, args);
-		copyin((const_userptr_t)args, (int *)k_buff, 4);
-		kprintf("karg: %d adr: %p\n", (int)k_buff, k_buff);
-		
-		//*k_buff = (void *)*args;
-		
-		k_buff += 4;
+		kern_buffer[arg_start] = (char)*args;
+
 		args += 1;
-		arg_start += 4;
+		arg_start += 1;
 	}
 
 	args -= (arg_start / 4);

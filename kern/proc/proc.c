@@ -254,7 +254,7 @@ proc_create_runprogram(const char *name)
 		return NULL;
 	}
 
-	k_buff = kmalloc(ARG_MAX);
+	// k_buff = kmalloc(ARG_MAX);
 	/* VM fields */
 
 	newproc->p_addrspace = NULL;
