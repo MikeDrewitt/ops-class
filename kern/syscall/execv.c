@@ -16,6 +16,18 @@
 int
 sys_execv(int32_t *retval, const char *program, char **args)
 {
+
+//TODO:
+//-instanciate kernel buffer to max_buf_len (64k)
+//kernel buffer is a char  **kbuff
+//
+//-loop through args and copy all the arguments into kernel buffer 
+//-stop looping when you get to null
+//-be sure to include padding to make sure the length of the argument is 
+//devisible by 4 (add in NULL)
+//
+	
+
 	(void)retval;
 	// (void)program;
 	(void)args;
