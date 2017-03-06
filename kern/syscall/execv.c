@@ -28,43 +28,41 @@ sys_execv(int32_t *retval, const char *program, char **args)
 //devisible by 4 (add in NULL)
 //
 
-
-
+	(void)retval;
+	
+	// kprintf("CALL TO EXEC CONNECTED\n");
 
 	bzero(k_buff, ARG_MAX);
 	int arg_start = 0;
 
-	while(*args != NULL){
-		kprintf("args=> %s    address=> %p\n",*args, args);
-		copyin((const_userptr_t)*args, (char *)k_buff, 4);
-		kprintf("k_buff=> %s       address=> %p\n",(char *)k_buff, k_buff);
+	while (*args != NULL) {
+		kprintf("arg: %s adr: %p\n", *args, args);
+		copyin((const_userptr_t)args, (int *)k_buff, 4);
+		kprintf("karg: %d adr: %p\n", (int)k_buff, k_buff);
+		
 		//*k_buff = (void *)*args;
+		
 		k_buff += 4;
-		args++;
-		arg_start++;
+		args += 1;
+		arg_start += 4;
 	}
 
-	(void)retval;
-	// (void)program;
-	// kprintf("CALL TO EXEC CONNECTED\n");
+	args -= (arg_start / 4);
+	kprintf("start: %d\n", arg_start);
 	
 	/* Cleaning out the kernel buffer for this call of EXECV */
-/*
-	while (kern_buff != NULL) {
-		kprintf("args: %s, is at: %p\n", kern_buff, &kern_buff);
+
+	while (args != NULL) {
+		kprintf("args: %s, is at: %p\n", *args, &*args);
 	 	
 		char *running_arg;
-		running_arg = kern_buff;
+		running_arg = *args;
 		while (*running_arg != 0) {
 			kprintf("chars: %d\n", *running_arg);
 			running_arg++;
 		}
-
-		kern_buff++;
-		args_start++;
 		args++;
 	}
-*/
 	
 	struct addrspace *as;
 	struct vnode *v;
