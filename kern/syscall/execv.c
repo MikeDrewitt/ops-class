@@ -8,6 +8,7 @@
 #include <syscall.h>
 #include <test.h>
 #include <copyinout.h>
+#include <limits.h>
 
 #include <kern/fcntl.h>
 #include <kern/errno.h>
@@ -30,10 +31,57 @@ sys_execv(int32_t *retval, const char *program, char **args)
 
 	(void)retval;
 	// (void)program;
-	(void)args;
+	// (void)args;
 
 	// kprintf("CALL TO EXEC CONNECTED\n");
+	
+	/* Cleaning out the kernel buffer for this call of EXECV */
+	bzero(kern_buff, ARG_MAX);
+	int args_start = 0;
 
+	while (*args != NULL) {
+
+		kern_buff[args_start] = *args;
+
+		args_start += 1;
+		args += 1;
+	}
+
+	args -= args_start;
+
+	while (*args != NULL) {
+		char *curstring = *args;
+		while (*curstring != 0) {
+			kern_buf[args_start] = (char *)*curstring;
+			args_start += 1;
+			curstring += 1;
+		}
+	}
+
+	int i = 0;
+	while (kern_buff[i] != 0) {
+		kprintf("kargs: %s, is %d bytes\n", kern_buff[i], sizeof(kern_buff[i]));
+		i += 1;
+	}
+
+
+/*
+	while (kern_buff != NULL) {
+		kprintf("args: %s, is at: %p\n", kern_buff, &kern_buff);
+	 	
+		char *running_arg;
+		running_arg = kern_buff;
+		while (*running_arg != 0) {
+			kprintf("chars: %d\n", *running_arg);
+			running_arg++;
+		}
+
+		kern_buff++;
+		args_start++;
+		args++;
+	}
+*/
+	
 	struct addrspace *as;
 	struct vnode *v;
 	vaddr_t entrypoint, stackptr;

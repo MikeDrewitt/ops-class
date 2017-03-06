@@ -190,7 +190,7 @@ syscall(struct trapframe *tf)
 
 
 
-		tf->tf_v0 = err;
+		tf->tf_v0 = retval;
 		tf->tf_a3 = 1;      /* signal an error */
 	}
 	else {

@@ -51,6 +51,7 @@
 #include <vfs.h>
 #include <syscall.h>
 #include <lib.h>
+#include <limits.h>
 
 #include <kern/fcntl.h>
 /*
@@ -252,6 +253,10 @@ proc_create_runprogram(const char *name)
 	if (newproc == NULL) {
 		return NULL;
 	}
+
+
+	/* Creating the Kernel Buffer  */
+	// kern_buff = kmalloc(ARG_MAX);
 
 	/* VM fields */
 
