@@ -40,15 +40,20 @@ sys_open(int32_t *retval, const char *filename, int flags)
 	file = kmalloc(sizeof(*file));
 
 	if (filename == NULL) {
-		*retval = -1;
-		return EFAULT;
+		*retval = EINVAL;
+		return -1;
 	}
-/*
-	if (flags != O_RDONLY && flags != O_WRONLY && flags != O_RDWR) {
-		*retval = -1;
-		return EINVAL;
+
+	if (flags < 0 || flags > 2) {
+		*retval = EINVAL;
+		return -1;
 	}
-*/	
+
+	if (!strcmp(filename, "")) {
+		*retval = EINVAL;
+		return -1;
+	}
+
 	file->ft_lock = lock_create("file_lock");
 	
 	file->flag = flags;
