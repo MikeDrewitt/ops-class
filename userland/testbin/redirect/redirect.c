@@ -74,10 +74,11 @@ dodup2(int ofd, int nfd, const char *file)
 	
 	printf("after dup\n");
 	if (r < 0) {
+		printf("first\n");
 		err(1, "%s: dup2", file);
-	printf("done\n");
 	}
 	if (r != nfd) {
+		printf("second\n");
 		errx(1, "%s: dup2: Expected %d, got %d", nfd, r);
 	}
 }
@@ -145,8 +146,12 @@ cat(void)
 	int rfd, wfd, result, status;
 	const char *args[2];
 
+	printf("before doopen\n");
+
 	rfd = doopen(INFILE, O_RDONLY);
 	wfd = doopen(OUTFILE, O_WRONLY|O_CREAT|O_TRUNC);
+
+	printf("after doopen\n");
 
 	pid = fork();
 	if (pid < 0) {
