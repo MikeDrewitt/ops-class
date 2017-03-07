@@ -171,7 +171,10 @@ syscall(struct trapframe *tf)
 			err = sys_lseek(&retval_long ,(int)tf->tf_a0, (off_t)full_pos,(int) whence);	
 			seek = 1;
 		break;
-		
+	
+		case SYS_dup2:
+			err = sys_dup2(&retval, (int)tf->tf_a0, (int)tf->tf_a1);
+		break;	
 		/* Add stuff here */
 
 	    default:
