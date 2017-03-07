@@ -30,6 +30,8 @@ sys_dup2(int32_t *retval, int oldfd, int newfd)
 	/* Points to the same location  */
 	curproc->p_filetable[newfd] = curproc->p_filetable[oldfd];
 
+	kprintf("offset 1: %d 2: %d\n", curproc->p_filetable[oldfd]->offset, curproc->p_filetable[newfd]->offset);
+
 	kprintf("end dup2\n");
 	*retval = newfd;
 	return 0;
