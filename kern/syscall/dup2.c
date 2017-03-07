@@ -27,10 +27,13 @@ sys_dup2(int32_t *retval, int oldfd, int newfd)
 		}
 	}
 
+	curproc->p_filetable[oldfd]->ref_counter += 1;
+
 	/* Points to the same location  */
 	curproc->p_filetable[newfd] = curproc->p_filetable[oldfd];
 
-	kprintf("offset 1: %d 2: %d\n", curproc->p_filetable[oldfd]->offset, curproc->p_filetable[newfd]->offset);
+	kprintf("oldfd: %d, newfd: %d\n", oldfd, newfd);
+	// kprintf("offset 1: %d 2: %d\n", curproc->p_filetable[oldfd]->offset, curproc->p_filetable[newfd]->offset);
 
 	kprintf("end dup2\n");
 	*retval = newfd;
