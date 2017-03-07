@@ -71,8 +71,11 @@ dodup2(int ofd, int nfd, const char *file)
 	int r;
 
 	r = dup2(ofd, nfd);
+	
+	printf("after dup\n");
 	if (r < 0) {
 		err(1, "%s: dup2", file);
+	printf("done\n");
 	}
 	if (r != nfd) {
 		errx(1, "%s: dup2: Expected %d, got %d", nfd, r);
@@ -189,6 +192,8 @@ main(void)
 	tprintf("Running cat < %s > %s\n", INFILE, OUTFILE);
 	cat();
 	nprintf(".");
+	printf("returned\n");	
+	
 
 	tprintf("Checking %s...\n", OUTFILE);
 	chkfile();
