@@ -13,7 +13,12 @@
 #include <kern/fcntl.h>
 #include <kern/errno.h>
 
-	
+static
+void
+n(void){
+	kprintf("\n");
+}
+
 int
 sys_execv(int32_t *retval, const char *program, char **args)
 {
@@ -33,74 +38,51 @@ sys_execv(int32_t *retval, const char *program, char **args)
 	// kprintf("CALL TO EXEC CONNECTED\n");
 
 	bzero(k_buff, ARG_MAX);
-	int arg_start = 0;
 
-	while (*args != NULL) {
-		kprintf("arg: %s adr: %p poniter_addr: %p\n", *args, args, &args);
+	void *buff_top = k_buff;
+	char *temp_str = (char *)k_buff;
+
+	copyin((const_userptr_t)args, &temp_str, 4);
+
+	memcpy(k_buff, temp_str,(ARG_MAX/32));
+
+	kprintf("top pointing to: %p\n", buff_top);
+	kprintf("buff pointing to: %p\n", k_buff);
+
+	n();
+
+	kprintf("arg: \'%s\'\n", (char *)k_buff);
+/*
+	while (k_buff != NULL) {
+		// Do stuff.
 		
-		k_buff = *args;
-
-		// copyin((const_userptr_t)args, k_buff, 4);
-		kprintf("karg: %s adr: %p pointer_addr: %p\n", (char *)k_buff, k_buff, &k_buff);
-		
-		//*k_buff = (void *)*args;
-		
-		k_buff += 4;
-		args += 1;
-		arg_start += 4;
-	}
-
-	args -= (arg_start / 4);
-	kprintf("start: %d\n", arg_start);
-	
-	/* Cleaning out the kernel buffer for this call of EXECV */
-
-	while (*args != NULL) {
-		kprintf("args: %s, is at: %p\n", *args, &*args);
-	 	
-		int padding = 0;
-
-		char *running_arg;
-		running_arg = *args;
-
-
-		while (*running_arg != 0) {
-			kprintf("chars: %d\n", *running_arg);
-			
-			char *cur_char = (char *)k_buff;
-			*cur_char = *running_arg;
-
-			padding += 1;
-			running_arg += 1;
-			k_buff += 1;
-			arg_start +=1;
-		}
-
-		padding %= 4;
-
-		int i;
-		for (i = 0; i < padding; i++) {
-			k_buff = '\0';
-			k_buff += 1;
-			arg_start += 1;
-		}
+		kprintf("arg: \'%s\'\n", (char *)k_buff);
+		kprintf("point to: \'%p\'\n", k_buff);
 
 		args++;
-	}
+		k_buff++;
+		copyin((const_userptr_t)args, &k_buff, 4);
+	}	
 
-	k_buff -= arg_start;
+	n();
 
-	int i = 0;	
-	while (k_buff != NULL) {
+	k_buff = buff_top;
+	
+	kprintf("arg: \'%s\'\n", (char *)k_buff);
+	kprintf("point to: \'%p\'\n", k_buff);
 
-		if (i > 16) {
-			kprintf("k_buff: %s\n",	(char *)k_buff);
-		}
+	k_buff++;
+	kprintf("arg: \'%s\'\n", (char *)k_buff);
+	kprintf("point to: \'%p\'\n", k_buff);
 
-		i += 1;
-		k_buff += 1;
-	}
+	k_buff++;
 
+	kprintf("arg: \'%s\'\n", (char *)k_buff);
+	kprintf("point to: \'%p\'\n", k_buff);
+
+
+	n();
+*/
 	/* BEGIN RUNPROGRAM  */
 
 	struct addrspace *as;
