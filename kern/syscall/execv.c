@@ -39,17 +39,18 @@ sys_execv(int32_t *retval, const char *program, char **args)
 	copyin((const_userptr_t)args, (void *)temp_str, 4);
 
 	kprintf("buff pointing to: %p\n", k_buff);
-	k_buff = &temp_str[0];
+	k_buff = temp_str[0];
 
 	while (k_buff != NULL) {	
 
 		kprintf("temp: %s\n", temp_str[0]);
+		kprintf("buff: %s\n", (char *)k_buff);
 	
 		k_buff++;
 		args++;
 
 		copyin((const_userptr_t)args, temp_str, 4);
-		k_buff = (temp_str[0] != NULL) ? &temp_str[0] : NULL;
+		k_buff = temp_str[0];
 	}
 
 	kprintf("top pointing to: %p\n", buff_top);
