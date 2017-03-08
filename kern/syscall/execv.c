@@ -36,9 +36,12 @@ sys_execv(int32_t *retval, const char *program, char **args)
 	int arg_start = 0;
 
 	while (*args != NULL) {
-		kprintf("arg: %s adr: %p\n", *args, args);
-		copyin((const_userptr_t)args, (int *)k_buff, 4);
-		kprintf("karg: %d adr: %p\n", (int)k_buff, k_buff);
+		kprintf("arg: %s adr: %p poniter_addr: %p\n", *args, args, &args);
+		
+		k_buff = *args;
+
+		// copyin((const_userptr_t)args, k_buff, 4);
+		kprintf("karg: %s adr: %p pointer_addr: %p\n", (char *)k_buff, k_buff, &k_buff);
 		
 		//*k_buff = (void *)*args;
 		
@@ -52,18 +55,54 @@ sys_execv(int32_t *retval, const char *program, char **args)
 	
 	/* Cleaning out the kernel buffer for this call of EXECV */
 
-	while (args != NULL) {
+	while (*args != NULL) {
 		kprintf("args: %s, is at: %p\n", *args, &*args);
 	 	
+		int padding = 0;
+
 		char *running_arg;
 		running_arg = *args;
+
+
 		while (*running_arg != 0) {
 			kprintf("chars: %d\n", *running_arg);
-			running_arg++;
+			
+			char *cur_char = (char *)k_buff;
+			*cur_char = *running_arg;
+
+			padding += 1;
+			running_arg += 1;
+			k_buff += 1;
+			arg_start +=1;
 		}
+
+		padding %= 4;
+
+		int i;
+		for (i = 0; i < padding; i++) {
+			k_buff = '\0';
+			k_buff += 1;
+			arg_start += 1;
+		}
+
 		args++;
 	}
-	
+
+	k_buff -= arg_start;
+
+	int i = 0;	
+	while (k_buff != NULL) {
+
+		if (i > 16) {
+			kprintf("k_buff: %s\n",	(char *)k_buff);
+		}
+
+		i += 1;
+		k_buff += 1;
+	}
+
+	/* BEGIN RUNPROGRAM  */
+
 	struct addrspace *as;
 	struct vnode *v;
 	vaddr_t entrypoint, stackptr;
