@@ -53,6 +53,8 @@ sys_execv(int32_t *retval, const char *program, char **args)
 		k_buff = temp_str[0];
 	}
 
+	kprintf("top: %s\n", (char *)buff_top);
+
 	kprintf("top pointing to: %p\n", buff_top);
 	kprintf("buff pointing to: %p\n", k_buff);
 
