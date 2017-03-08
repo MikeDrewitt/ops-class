@@ -33,17 +33,20 @@ sys_execv(int32_t *retval, const char *program, char **args)
 
 	bzero(k_buff, ARG_MAX);
 
-	void *buff_top = k_buff;
 	char *temp_str[0];
 		
 	copyin((const_userptr_t)args, (void *)temp_str, 4);
 
-	kprintf("buff pointing to: %p\n", k_buff);
 	k_buff = temp_str[0];
+	kprintf("buff is at: %p\n", &k_buff);
+	
+	void *buff_top = k_buff;
+	kprintf("top pointing to: %p\n", buff_top);
+
 
 	while (k_buff != NULL) {	
 
-		kprintf("temp: %s\n", temp_str[0]);
+		// kprintf("temp: %s\n", temp_str[0]);
 		kprintf("buff: %s\n", (char *)k_buff);
 	
 		k_buff++;
@@ -53,28 +56,21 @@ sys_execv(int32_t *retval, const char *program, char **args)
 		k_buff = temp_str[0];
 	}
 
-	kprintf("top: %s\n", (char *)buff_top);
+	kprintf("buff: %s\n", (char *)k_buff);	
 
-	kprintf("top pointing to: %p\n", buff_top);
-	kprintf("buff pointing to: %p\n", k_buff);
-
+	/* Setting the pointer back to the top  */
 	k_buff = buff_top;
-	
-	kprintf("top pointing to: %p\n", buff_top);
-	kprintf("buff pointing to: %p\n", k_buff);
 
-	kprintf("arg: \'%s\'\n", (char *)k_buff);
-	kprintf("point to: \'%p\'\n", k_buff);
+	kprintf("top: %s\n", (char *)k_buff);
 
-	k_buff++;
-	kprintf("arg: \'%s\'\n", (char *)k_buff);
-	kprintf("point to: \'%p\'\n", k_buff);
+	k_buff += 12;
+	kprintf("top: %s\n", (char *)k_buff);
 
-	k_buff++;
+	k_buff += 4;
+	kprintf("top: %s\n", (char *)k_buff);
 
-	kprintf("arg: \'%s\'\n", (char *)k_buff);
-	kprintf("point to: \'%p\'\n", k_buff);
-
+	k_buff += 4;
+	kprintf("top: %s\n", (char *)k_buff);
 	/* BEGIN RUNPROGRAM  */
 
 	struct addrspace *as;
