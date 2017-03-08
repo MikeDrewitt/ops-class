@@ -13,12 +13,6 @@
 #include <kern/fcntl.h>
 #include <kern/errno.h>
 
-static
-void
-n(void){
-	kprintf("\n");
-}
-
 int
 sys_execv(int32_t *retval, const char *program, char **args)
 {
@@ -40,34 +34,32 @@ sys_execv(int32_t *retval, const char *program, char **args)
 	bzero(k_buff, ARG_MAX);
 
 	void *buff_top = k_buff;
-	char *temp_str = (char *)k_buff;
+	char *temp_str[0];
+		
+	copyin((const_userptr_t)args, (void *)temp_str, 4);
 
-	copyin((const_userptr_t)args, &temp_str, 4);
+	kprintf("buff pointing to: %p\n", k_buff);
+	k_buff = &temp_str[0];
 
-	memcpy(k_buff, temp_str,(ARG_MAX/32));
+	while (k_buff != NULL) {	
+
+		kprintf("temp: %s\n", temp_str[0]);
+	
+		k_buff++;
+		args++;
+
+		copyin((const_userptr_t)args, temp_str, 4);
+		k_buff = (temp_str[0] != NULL) ? &temp_str[0] : NULL;
+	}
 
 	kprintf("top pointing to: %p\n", buff_top);
 	kprintf("buff pointing to: %p\n", k_buff);
 
-	n();
-
-	kprintf("arg: \'%s\'\n", (char *)k_buff);
-/*
-	while (k_buff != NULL) {
-		// Do stuff.
-		
-		kprintf("arg: \'%s\'\n", (char *)k_buff);
-		kprintf("point to: \'%p\'\n", k_buff);
-
-		args++;
-		k_buff++;
-		copyin((const_userptr_t)args, &k_buff, 4);
-	}	
-
-	n();
-
 	k_buff = buff_top;
 	
+	kprintf("top pointing to: %p\n", buff_top);
+	kprintf("buff pointing to: %p\n", k_buff);
+
 	kprintf("arg: \'%s\'\n", (char *)k_buff);
 	kprintf("point to: \'%p\'\n", k_buff);
 
@@ -80,9 +72,6 @@ sys_execv(int32_t *retval, const char *program, char **args)
 	kprintf("arg: \'%s\'\n", (char *)k_buff);
 	kprintf("point to: \'%p\'\n", k_buff);
 
-
-	n();
-*/
 	/* BEGIN RUNPROGRAM  */
 
 	struct addrspace *as;
