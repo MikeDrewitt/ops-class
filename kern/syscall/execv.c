@@ -41,34 +41,35 @@ sys_execv(int32_t *retval, const char *program, char **args)
 	char *pointer_char = (char *)k_buff;
 
 	//char *temp_ptr = pointer_char + arg_counter;
-	int num_args = 0;//number of arguments
-	int buff_offset = 0;//i dont remember
-	int arg_buff_count = 0;//amount of space arguments + buffers take
-	int buff_size = 0;// size of the total buffer being used
+	int num_args = 0;		// number of arguments
+	int buff_offset = 0;	// i dont remember - l
+	int arg_buff_count = 0;	// amount of space arguments + buffers take
+	int buff_size = 0;		// size of the total buffer being used
 
-	while(*args != NULL){
+	while (*args != NULL) {
 		//kprintf("args : %p\n",args);
 		buff_offset++;
 		args++;
 		num_args++;
 	}
-	args -= buff_offset;
-	buff_offset += 1; //for the null pointer buffer between pointers and chars
-	buff_offset = (buff_offset * 4);
 
+	args -= buff_offset;
+	buff_offset += 1;		// for the null pointer buffer between pointers and chars
+	buff_offset = (buff_offset * 4);
 
 	pointer_char += buff_offset;
 	int cur_arg = 0;
 
+	int is_first = 0;		// flag to know if it is the first char in argument
 
-	int is_first = 0; // flag to know if it is the first char in argument
 	//copys the arguments character by character and adds a buffer also 
 	//sets the pointers
 	kprintf("THIS IS THE KERNEL BUFFER\n");
-	while(cur_arg != num_args){
+	
+	while (cur_arg != num_args) {
 		int arg_len = 0;	
 		is_first = 1;
-		while(**args != 0){
+		while (**args != 0) {
 			arg_buff_count++;
 			buff_size++;
 			if(is_first){
@@ -112,6 +113,7 @@ sys_execv(int32_t *retval, const char *program, char **args)
 		else{
 			int i;
 			for(i = 0; i<4; i++){
+
 				arg_buff_count++;
 				buff_size++;
 				*pointer_char = '\0';
@@ -178,27 +180,18 @@ sys_execv(int32_t *retval, const char *program, char **args)
 	if (result) {
 		/* p_addrspace will go away when curproc is destroyed */
 		return result;
-	}
-
+	}	
 	
-	
-	
-	
-	//i dont think ive reset the pointers for userland.......... kill me
-	
-// copy the arguments into the user stack. NOT GEOFF'S CODE
-
+	// I dont think ive reset the pointers for userland.......... kill me	
+	// copy the arguments into the user stack. NOT GEOFF'S CODE
 
 	vaddr_t top_of_stack = stackptr;
 
 //	stackptr-= arg_buff_count;
 	stackptr-= buff_size;
 	kprintf("bottom of arg buff 0x77ffffffdc = %p\n", (void *)stackptr);
-	stackptr-=4; //skips the null ptr
+	stackptr -= 4; //skips the null ptr
 	cur_arg = 0;
-
-
-
 
 	//this is not right....... fine ish....
 	while(cur_arg != num_args){
@@ -211,34 +204,51 @@ sys_execv(int32_t *retval, const char *program, char **args)
 		stack_buff+=4;
 	}
 
-
-
-
 //	stackptr-=num_args*4;	
 //	top_of_stack = stackptr;
 	kprintf("THIS IS THE USER STACK\n");
-	int i;
-/*
+
+	/*
 	//int pointers = 0;
 	is_first = 1;
-	int found_null = 0;*/
-	stackptr-=num_args*4;
+	int found_null = 0;
+	*/
+
+	stackptr -= num_args*4;
 	top_of_stack -= buff_size;
-	kprintf("hullo %p\n", (void *)stackptr);
-	for(i = (num_args+1)*4; i<buff_size; i++){
-		if(i>= 0 && i<((num_args+1)*4)){
-			
-			
+	kprintf("hullo %p\n", (void *)stackptr);	
+
+	int i = 0; 
+
+	kprintf("num_args %d\n", (num_args+1)*4);
+	for (; i < ((num_args+1)*4); i += 4) {
+		copyout((const void *)k_buff, (userptr_t)top_of_stack, 4);
+		kprintf("pointer -> %p\n", (void *)top_of_stack);
+		top_of_stack += 4;
+		k_buff += 4;
+	}
+
+
+	for (; i < buff_size; i++) {
+		copyout((const void *)k_buff, (userptr_t)top_of_stack, 1);
+		kprintf("agruments = %s   address = %p \n", 
+				(char *)top_of_stack, (void *)top_of_stack);
+		top_of_stack +=1;
+		k_buff += 1;
+	}
+
+/*
+	for (i = (num_args+1)*4; i < buff_size; i++) {
+		if (i >= 0 && i < ((num_args+1)*4)) {
+				
 			copyout((const void *)k_buff,(userptr_t)top_of_stack,4);
 			kprintf("pointer -> %p\n",(void *)top_of_stack);
 			top_of_stack+=4;
 			k_buff+=4;
-			i+=3;
-			
+			i+=3;	
 		}
-		else{
+		else {
 
-	/*
 		if(is_first){
 			is_first = 0;
 			stack_buff = (void *)stackptr;
@@ -255,28 +265,27 @@ sys_execv(int32_t *retval, const char *program, char **args)
 				is_first = 1;
 			}
 	
-		}*/
+		}
+		
 			copyout((const void *)k_buff,(userptr_t)top_of_stack,1);
 			kprintf("agruments = %s   address = %p \n", (char *)top_of_stack,(void *)top_of_stack);
 			top_of_stack+=1;
 			k_buff+=1;
 		}
-
-
 	}
+*/
 
 	top_of_stack -= buff_size;
+
 //end of my shit 
 
-
-
-
-
+	kprintf("stackptr: %p\n", (void *)stackptr);
 
 	/* Warp to user mode. */
-	enter_new_process(0 /*argc*/, NULL /*userspace addr of argv*/,
-			  NULL /*userspace addr of environment*/,
-			  stackptr, entrypoint);
+	enter_new_process(num_args,			/* argc  */ 
+			(userptr_t)top_of_stack,	/* userspace addr of argv */
+			(userptr_t)top_of_stack,	/* userspace addr of environment */
+			stackptr, entrypoint);
 
 	/* enter_new_process does not return. */
 	panic("enter_new_process returned\n");
