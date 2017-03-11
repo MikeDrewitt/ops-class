@@ -17,119 +17,240 @@ int
 sys_execv(int32_t *retval, const char *program, char **args)
 {
 
-//TODO:
-//- if the argument is divisible by 4 then you need to add 4 null points of 
-//padding.
-//
-//-keep a count of the total lenght of the arguments.
-//
-//- reassigning pointer position is going to be the arg_buff_count +4+(4*count)
-// count being the current pointer youre on
 
 	(void)retval;
 	
-	// kprintf("CALL TO EXEC CONNECTED\n");
-
+	/* zeros out the buffer */
 	bzero(k_buff, ARG_MAX);
 
-	//kprintf("buff loc: %p\n", k_buff);
 
 
-//	char single_char = (char)k_buff;
+	/*
+	 * pointer_void - pointer to the kernel buffer that will be used to assign 
+	 *				  the pointers to the arguments.
+	 *
+	 * top_buff - the pointer to the kernel buffer that is used for copying 
+	 *            from the kernel buffer to the user stack.
+	 *
+	 * pointer_char - pointer to the kernel that is used for copying in the
+	 *                arguments from userspace.
+	 *
+	 * safe_args - safe version of the args variable being passed in
+	 *
+	 */
+
 	void *pointer_void = k_buff;
 	void *top_buff = k_buff;
 	char *pointer_char = (char *)k_buff;
+	char **safe_args = k_buff;
 
-	//char *temp_ptr = pointer_char + arg_counter;
-	int num_args = 0;		// number of arguments
-	int buff_offset = 0;	// total number of bytes of all pointers (including NULL)
-	int arg_buff_count = 0;	// amount of bytes arguments + buffers take
-	int buff_size = 0;		// bytes of pointers + args
 
-	while (*args != NULL) {
-		//kprintf("args : %p\n",args);
+	/*
+	 * num_args - number of arguments being passed in.
+	 *
+	 * buffer_offset - total number of bytes of all the pointers including
+	 *                 NULL.
+	 *
+	 * arg_buff_count - total number of bytes the arguments + the padding
+	 *                  takes up.
+	 *
+	 * buff_size - total number of bytes used in the kernel buffer.
+	 *
+	 * if_first - flag to tell if the current character is the first character
+	 *            in the argument
+	 *
+	 * cur_arg - shows numerically the current argument you're on
+	 *
+	 *
+	 */
+
+	int num_args = 0;		
+	int buff_offset = 0;	
+	int arg_buff_count = 0;	
+	int buff_size = 0;		
+	int is_first = 0;		// flag to know if it is the first char in argument
+	int cur_arg = 0;
+
+	
+	//LETS JENK THE SHIT OUT OF THIS
+
+
+
+	/* copys the argument list into a safe variable (on the kernel heap... or 
+	 * stack.... i still dont know how memory works.
+	 */
+	
+	copyin((const_userptr_t)args , &safe_args, sizeof(args));
+	kprintf("what is in safe_args = %p\n",(void *)safe_args);
+	kprintf("(char *)safe_args = %s\n",(char *)safe_args);
+	
+	
+	/* counts the number of arguments */	
+	while (*(char **)safe_args != NULL) {
+		
+		
+		buff_offset++;
+		args++;
+		safe_args++;
+		num_args++;
+		copyin((const_userptr_t)args , (void *)safe_args, 4);
+		kprintf("what is in safe_args = %p\n",(void *)safe_args);
+		kprintf("(char *)safe_args = %s\n",(char *)safe_args);
+	}
+/*
+	while(*args != NULL){
+
 		buff_offset++;
 		args++;
 		num_args++;
+
+
+
 	}
+*/
+	kprintf("this should be 3 = %d\n",num_args);
+
 
 	args -= buff_offset;
-	buff_offset += 1;		// for the null pointer buffer between pointers and chars
+
+	safe_args -= buff_offset;
+		kprintf("args is = %p\n", (void *)args);
+		kprintf("buff_offset = %d\n", buff_offset);
+		kprintf("    what is in safe_args = %p\n",(void *)safe_args);
+		kprintf("    (char *)safe_args = %s\n",(char *)safe_args);
+
+
+	buff_offset += 1;  //for the null pointer buffer between pointers and chars
 	buff_offset = (buff_offset * 4);
-
 	pointer_char += buff_offset;
-	int cur_arg = 0;
 
-	int is_first = 0;		// flag to know if it is the first char in argument
 
-	//copys the arguments character by character and adds a buffer also 
-	//sets the pointers
-	kprintf("THIS IS THE KERNEL BUFFER\n");
+
+//	kprintf("THIS IS THE KERNEL BUFFER\n");
 	
-	while (cur_arg != num_args) {
+	/*copys in the arguments from user space to the kernel buffer character
+	 * by character.
+	 */
+
+
+	/* loops through each argument one by one */
+	while (cur_arg != num_args) { 
+
 		int arg_len = 0;	
 		is_first = 1;
-		while (**args != 0) {
+//	kprintf("cur_arg = %d      |      num_args = %d\n", cur_arg,num_args);
+
+		kprintf("what it this = %c\n", **(char **)safe_args);
+		kprintf("where is this = %p\n", (void *)safe_args);
+		/* grabs each character from the argument one by one */
+		while (**(char **)safe_args != 0) {
+//		while(**args != 0){
+			kprintf("breaking here\n");
 			arg_buff_count++;
 			buff_size++;
-			//assignes the pointer
+
+			/* if the character is the first character in the argument we 
+			 * assign the pointer to point to it
+			 */
 			if(is_first){
+			
 				is_first = 0;
 				pointer_void =(void *) pointer_char;
-				kprintf("k_pointer = %p\n", pointer_void);
-				kprintf("k_pointer -> %s\n", (char *)pointer_void);
+				
+//				kprintf("k_pointer = %p\n", pointer_void);
+//				kprintf("k_pointer -> %s\n", (char *)pointer_void);
+				
 				pointer_void+=4;
 				buff_size+=4;
 			}
-			copyin((const_userptr_t)*args,pointer_char,1);
-			kprintf("k_arguments = %s        address = %p \n",pointer_char, (void *)pointer_char);
-			//kprintf("please dont be 0x7... = %p\n", (void *)pointer_char);
-			*args+=1;
+			/*then we copy the character in from user space */
+
+			kprintf("why is this breaking = %c\n", **(char **)safe_args);
+			copyin((const_userptr_t)*safe_args, pointer_char,1);
+					
+//			copyin((const_userptr_t)*args,(void *) pointer_char,1);
+//			kprintf("k_arguments = %s        address = %p \n",pointer_char, (void *)pointer_char);
+			
+			*args += 1;
+			*safe_args+=1;
 			arg_len++;
 			pointer_char+=1;
+	
 		}
+		
+		/*THIS IS WHERE WE SET THE PADDING */
+
+		/*if the arguments length isnt a multiple of 4 */ 
 		if((arg_len%4)){
+			/*if the argument is less than 4 */
 			if(arg_len < 4){
+		
 				int i;
+				/*add the correct padding */
 				for(i = 0; i < 4-arg_len; i++){
+				
 					arg_buff_count++;
 					buff_size++;
 					*pointer_char = '\0';
-					kprintf("k_arguments = %s       address = %p \n",pointer_char, (void *)pointer_char);
+					
+//					kprintf("k_arguments = %s       address = %p \n",pointer_char, (void *)pointer_char);
+					
 					pointer_char++;
 				}
-			}
+			} /*if the argument is greater than 4 */
 			else{
+				
 				int i;
+				/*calculate the correct padding and add it */
 				for(i = 0; i< arg_len%4; i++){
+				
 					arg_buff_count++;
 					buff_size++;
 					*pointer_char = '\0';
-					kprintf("k_arguments = %s       address = %p \n",pointer_char, (void *)pointer_char);
-					//kprintf("please be 0x7...  = %p\n",(void *)pointer_char);
+					
+//					kprintf("k_arguments = %s       address = %p \n",pointer_char, (void *)pointer_char);
 				
 					pointer_char+=1;
 				}
 			}
-		}
+		}/* if the arguments length is a multiple of 4 */
 		else{
 			int i;
+			/* add 4 padding to it */
 			for (i = 0; i<4; i++) {
+				
 				arg_buff_count++;
 				buff_size++;
 				*pointer_char = '\0';
-				kprintf("k_arguments = %s       address = %p \n",pointer_char, (void *)pointer_char);
+				
+//				kprintf("k_arguments = %s       address = %p \n",pointer_char, (void *)pointer_char);
+				
 				pointer_char+=1;
 			}
 		}
+
 		args += 1;
+		safe_args += 1;
 		cur_arg+=1;
+	
 	}
+
 	buff_size+=4;
-	//kprintf("the length of the arg buffer 36 = %d\n",buff_size);
+	
+
+
+	/*sets the void pointer on the kernel buffer*/
 	pointer_void = NULL;
-	kprintf("k_pointer = %p\n", pointer_void);
-	kprintf("k_pointer -> %s\n", (char *)pointer_void);
+	
+//	kprintf("k_pointer = %p\n", pointer_void);
+//	kprintf("k_pointer -> %s\n", (char *)pointer_void);
+
+
+//END OF MY CODE SECTION
+
+
+
+
 
 	/* BEGIN RUNPROGRAM  */
 
@@ -141,16 +262,15 @@ sys_execv(int32_t *retval, const char *program, char **args)
 	/* Open the file. */
 	char kernel_progname[128];
 	copyinstr((const_userptr_t)program, kernel_progname, 128, 0);
-
-	// kprintf("progname: %s\n", kernel_progname);
+	
 	result = vfs_open(kernel_progname, O_RDONLY, 0, &v);
 	if (result) {
-	kprintf("error = %d\n", result);
+//	kprintf("error = %d\n", result);
 		return result;
 	}
 
 	/* We should be a new process. */
-	// KASSERT(proc_getas() == NULL);
+//	KASSERT(proc_getas() == NULL); //we commented this out......
 
 	/* Create a new address space. */
 	as = as_create();
@@ -176,127 +296,122 @@ sys_execv(int32_t *retval, const char *program, char **args)
 
 	/* Define the user stack in the address space */
 	result = as_define_stack(as, &stackptr);
-	//kprintf("top of user stack 0x7fffffff = %p\n", (void *)stackptr-1);
 	if (result) {
 		/* p_addrspace will go away when curproc is destroyed */
 		return result;
 	}	
 	
-	// I dont think ive reset the pointers for userland.......... kill me	
-	// copy the arguments into the user stack. NOT GEOFF'S CODE
+
+
+
+
+	/* START OF MY CODE */
+
+	
+	
+	
+	
+
+
+
+//	kprintf("\n\n\n\n\nTHIS IS THE USER STACK\n");
+
+
+	/*
+	 * arg_pointer - pointer to user stack that is used for copying out the 
+	 *               arguments
+	 *
+	 * top_of_stack - pointer to user stack that is used for copying out the
+	 *                pointers to the arguments
+	 *
+	 * entry_stack - pointer to the bottom of the user stack that we pass into
+	 *               enter_new_process as the user pointer
+	 *
+	 * static_top_of_stack - this pointer will always point to the top of 
+	 *                       the user stack
+	 *
+	 *
+	 * new_arg - a flag if false->we arent on the first character of an 
+	 *           argument. if true-> we are.
+	 *
+	 */
 
 	vaddr_t static_top_of_stack = stackptr;
-
-//	stackptr-= arg_buff_count;
-	stackptr-= buff_size;
-	// kprintf("bottom of arg buff 0x77ffffffdc = %p\n", (void *)stackptr);
-	stackptr -= 4; //skips the null ptr
-	cur_arg = 0;
-
-	/*
-	//this is not right....... fine ish....
-	while(cur_arg != num_args){
-		cur_arg++;
-		stackptr += 4;
-
-		top_buff = (void *)stackptr;
-		kprintf("stack pointer = %p\n", (void *)stackptr);
-	//	kprintf("k_buffer pointer = %p\n", top_buff);
-		top_buff+=4;
-	}
-*/
-
-//	stackptr-=num_args*4;	
-//	top_of_stack = stackptr;
-	kprintf("THIS IS THE USER STACK\n");
-
-	/*
-	//int pointers = 0;
-	is_first = 1;
-	int found_null = 0;
-	*/
-
-	// kprintf("hullo %p\n", (void *)stackptr);	
-
 	vaddr_t arg_pointer = static_top_of_stack - arg_buff_count;
 	vaddr_t top_of_stack = static_top_of_stack - buff_size;
 	vaddr_t entry_stack = static_top_of_stack - buff_size;
 
-	k_buff += buff_offset;
+	/*
+	 * new_arg - another flag to show if we've hit the first character in a
+	 *           new argument....... why do i keep making new variables....
+	 *
+	 */
 	
 	int new_arg = true;
+	int i;
+	
+	stackptr-= buff_size;
+	stackptr -= 4; //skips the null ptr
+	cur_arg = 0;
+	k_buff += buff_offset;
+	
 
-	int i = buff_offset;
-	for (; i < buff_size; i++) {
+	/*goes through the kernel buffer and copys out to the user stack
+	 *character by characteer
+	 */
+	for (i = buff_offset; i < buff_size; i++) {
 			
 		copyout((const void *)k_buff, (userptr_t)arg_pointer, 1);
-		 kprintf("agruments = \'%s\'  address = %p \n", 
-			   (char *)arg_pointer, (void *)arg_pointer);
+		
+//		kprintf("agruments = \'%s\'  address = %p \n", (char *)arg_pointer, (void *)arg_pointer);
 
-
+		/*when it passes this if statement that means that weve hit the first
+		 *character in the argument, so we set a pointer to point to that 
+		 *location
+		 */
 		if (new_arg && *(char *)arg_pointer != 0) {
 			
 			top_buff = (void *)arg_pointer;
+			
+			//top_buff = (void *)0x7fffffe8 ;
+			
+			//kprintf("brijesh : %s\n", (char *)top_buff);
+			
+			copyout(&top_buff, (userptr_t)top_of_stack, 4);
+			
+			//memcpy((void *)top_of_stack, &top_buff, 4);
 
-			copyout((const void *)top_buff, (userptr_t)top_of_stack, 4);
-			kprintf("pointer = %p\n", (void *)top_of_stack);
-			kprintf("pointer -> %s\n",(char *)top_of_stack);
+			//kprintf("pointer = %p\n", (void *)top_of_stack);
+			//kprintf("pointer -> %s\n",*(char **)top_of_stack);
+			
 			top_of_stack += 4;
 			top_buff += 4;
-
 			new_arg = false;
+		
 		}
 
 		// kprintf("arg_pointer: %d =? 0\n", *(char *)arg_pointer);
+		
+		/*this sets the flag to show weve ended an argument and should now 
+		 *start looking for the next argument starting point
+		 */
 		if (*(char *)arg_pointer == 0) {
+		
 			new_arg = true;
-			// kprintf("found\n");
+			
 		}
 		
 		arg_pointer +=1;
 		k_buff += 1;
 	}
-	//(void *)top_of_stack = NULL;
-	copyout((const void *)top_buff, (userptr_t)top_of_stack, 4);
-	kprintf("pointer = %p\n",(void *)top_of_stack);
-	kprintf("pointer ->\' %s\'\n",(char *)top_of_stack);
-/* 
-	for (i = (num_args+1)*4; i < buff_size; i++) {
-		if (i >= 0 && i < ((num_args+1)*4)) {
-				
-			copyout((const void *)k_buff,(userptr_t)top_of_stack,4);
-			kprintf("pointer -> %p\n",(void *)top_of_stack);
-			top_of_stack+=4;
-			k_buff+=4;
-			i+=3;	
-		}
-		else {
-
-		if(is_first){
-			is_first = 0;
-			stack_buff = (void *)stackptr;
-			copyout((const void *)stack_buff,(userptr_t)top_of_stack,4);
-			stack_buff++;
-			top_of_stack+=4;
-
-
-		}
-		if((char *)k_buff == '\0' || found_null){
-			found_null = 1;
-			if((char *)k_buff != '\0'){
-				found_null = 0;
-				is_first = 1;
-			}
 	
-		}
-		
-			copyout((const void *)k_buff,(userptr_t)top_of_stack,1);
-			kprintf("agruments = %s   address = %p \n", (char *)top_of_stack,(void *)top_of_stack);
-			top_of_stack+=1;
-			k_buff+=1;
-		}
-	}
-*/
+	/*copys in the void pointer*/ 
+	//copyout((const void *)top_buff, (userptr_t)top_of_stack, 4);
+
+	//kprintf("pointer = %p\n",(void *)top_of_stack);
+	//kprintf("pointer ->\' %s\'\n",(char *)top_of_stack);
+	top_of_stack += 4;
+	
 
 	// kprintf("stackptr: %p\n", (void *)stackptr);
 	
@@ -307,21 +422,71 @@ sys_execv(int32_t *retval, const char *program, char **args)
 
 	/* Warp to user mode. */
 
+	/*just a sanity check to see if the values are in the correct spot*/
+
+	/*kprintf("\n\n\n\nsanity check\n");
+
+	vaddr_t sanity_arg = static_top_of_stack - buff_size;
+	vaddr_t sanity = static_top_of_stack - arg_buff_count;
+	new_arg = true;
+	int hullo;
+	
+	for (hullo = 0; hullo < arg_buff_count; hullo++) {
+	
 
 
 
-	kprintf("\n\nnum_args = %d\n", num_args);
-	kprintf("entry_stack = %p\n", (void *)entry_stack);
+
+
+			
+		kprintf("agruments = \'%s\'  address = %p \n", 
+			 (char *)sanity, (void *)sanity);
+
+
+		if (new_arg && *(char *)sanity != 0) {
+
+			kprintf("pointer = %p\n", (void *)sanity_arg);
+			kprintf("pointer -> %s\n",(char *)sanity_arg);
+
+			sanity_arg += 4;
+			new_arg = false;
+		
+		}
+
+		// kprintf("arg_pointer: %d =? 0\n", *(char *)arg_pointer);
+		if (*(char *)sanity == 0) {
+		
+			new_arg = true;
+			
+		}
+		
+		sanity +=1;
+	
+	}
+
+
+	kprintf("DAVE: %s\n", (char *)0x7fffffd8);
+*/
+
+
+//	kprintf("\n\n\n\n\nnum_args = %d\n", num_args);
+//	kprintf("entry_stack = %p\n", (void *)entry_stack);
+
 	vaddr_t bottom_of_stack = static_top_of_stack- buff_size;
-	kprintf("bottom_of_stack = %p\n\n", (void *)bottom_of_stack);
+	
+//	kprintf("bottom_of_stack = %p\n", (void *)bottom_of_stack);
+//	kprintf("entrypoint = %p\n\n", (void *)entrypoint);
+	
+	
+	
 	enter_new_process(num_args,			/* argc  */ 
 			(userptr_t)entry_stack,		/* userspace addr of argv */
 			NULL,						/* userspace addr of environment */
-			bottom_of_stack, entrypoint);
+			bottom_of_stack,entrypoint);
 
 
 	/* enter_new_process does not return. */
-	// panic("enter_new_process returned\n");
+	panic("enter_new_process returned\n");
 	*retval =  EINVAL;
 	return -1;
 }
