@@ -37,14 +37,14 @@ sys_execv(int32_t *retval, const char *program, char **args)
 
 //	char single_char = (char)k_buff;
 	void *pointer_void = k_buff;
-	void *stack_buff = k_buff;
+	void *top_buff = k_buff;
 	char *pointer_char = (char *)k_buff;
 
 	//char *temp_ptr = pointer_char + arg_counter;
 	int num_args = 0;		// number of arguments
-	int buff_offset = 0;	// i dont remember - l
-	int arg_buff_count = 0;	// amount of space arguments + buffers take
-	int buff_size = 0;		// size of the total buffer being used
+	int buff_offset = 0;	// total number of bytes of all pointers (including NULL)
+	int arg_buff_count = 0;	// amount of bytes arguments + buffers take
+	int buff_size = 0;		// bytes of pointers + args
 
 	while (*args != NULL) {
 		//kprintf("args : %p\n",args);
@@ -112,8 +112,7 @@ sys_execv(int32_t *retval, const char *program, char **args)
 		}
 		else{
 			int i;
-			for(i = 0; i<4; i++){
-
+			for (i = 0; i<4; i++) {
 				arg_buff_count++;
 				buff_size++;
 				*pointer_char = '\0';
@@ -126,10 +125,6 @@ sys_execv(int32_t *retval, const char *program, char **args)
 	buff_size+=4;
 	//kprintf("the length of the arg buffer 36 = %d\n",buff_size);
 	pointer_void = NULL;
-
-
-
-
 
 	/* BEGIN RUNPROGRAM  */
 
@@ -185,7 +180,7 @@ sys_execv(int32_t *retval, const char *program, char **args)
 	// I dont think ive reset the pointers for userland.......... kill me	
 	// copy the arguments into the user stack. NOT GEOFF'S CODE
 
-	vaddr_t top_of_stack = stackptr;
+	vaddr_t static_top_of_stack = stackptr;
 
 //	stackptr-= arg_buff_count;
 	stackptr-= buff_size;
@@ -193,16 +188,18 @@ sys_execv(int32_t *retval, const char *program, char **args)
 	stackptr -= 4; //skips the null ptr
 	cur_arg = 0;
 
+	/*
 	//this is not right....... fine ish....
 	while(cur_arg != num_args){
 		cur_arg++;
 		stackptr += 4;
 
-		stack_buff = (void *)stackptr;
+		top_buff = (void *)stackptr;
 		kprintf("stack pointer = %p\n", (void *)stackptr);
-	//	kprintf("k_buffer pointer = %p\n", stack_buff);
-		stack_buff+=4;
+	//	kprintf("k_buffer pointer = %p\n", top_buff);
+		top_buff+=4;
 	}
+*/
 
 //	stackptr-=num_args*4;	
 //	top_of_stack = stackptr;
@@ -214,30 +211,47 @@ sys_execv(int32_t *retval, const char *program, char **args)
 	int found_null = 0;
 	*/
 
-	stackptr -= num_args*4;
-	top_of_stack -= buff_size;
 	kprintf("hullo %p\n", (void *)stackptr);	
 
-	int i = 0; 
+	vaddr_t arg_pointer = static_top_of_stack - arg_buff_count;
+	vaddr_t top_of_stack = static_top_of_stack - buff_size;
+	vaddr_t entry_stack = static_top_of_stack - buff_size;
 
-	kprintf("num_args %d\n", (num_args+1)*4);
-	for (; i < ((num_args+1)*4); i += 4) {
-		copyout((const void *)k_buff, (userptr_t)top_of_stack, 4);
-		kprintf("pointer -> %p\n", (void *)top_of_stack);
-		top_of_stack += 4;
-		k_buff += 4;
-	}
+	k_buff += buff_offset;
+	
+	int new_arg = true;
 
-
+	int i = buff_offset;
 	for (; i < buff_size; i++) {
-		copyout((const void *)k_buff, (userptr_t)top_of_stack, 1);
-		kprintf("agruments = %s   address = %p \n", 
-				(char *)top_of_stack, (void *)top_of_stack);
-		top_of_stack +=1;
+			
+		copyout((const void *)k_buff, (userptr_t)arg_pointer, 1);
+		kprintf("agruments = \'%s\'  address = %p \n", 
+			   (char *)arg_pointer, (void *)arg_pointer);
+
+
+		if (new_arg && *(char *)arg_pointer != 0) {
+			
+			top_buff = (void *)arg_pointer;
+
+			copyout((const void *)top_buff, (userptr_t)top_of_stack, 4);
+			kprintf("pointer -> %p\n", (void *)top_of_stack);
+			top_of_stack += 4;
+			top_buff += 4;
+
+			new_arg = false;
+		}
+
+		// kprintf("arg_pointer: %d =? 0\n", *(char *)arg_pointer);
+		if (*(char *)arg_pointer == 0) {
+			new_arg = true;
+			// kprintf("found\n");
+		}
+
+		arg_pointer +=1;
 		k_buff += 1;
 	}
 
-/*
+/* 
 	for (i = (num_args+1)*4; i < buff_size; i++) {
 		if (i >= 0 && i < ((num_args+1)*4)) {
 				
@@ -275,16 +289,21 @@ sys_execv(int32_t *retval, const char *program, char **args)
 	}
 */
 
-	top_of_stack -= buff_size;
+	top_of_stack -= buff_offset;
 
 //end of my shit 
 
-	kprintf("stackptr: %p\n", (void *)stackptr);
+	// kprintf("stackptr: %p\n", (void *)stackptr);
+	
+	// kprintf("num_args %d\n", (num_args));
+	// kprintf("buff_offset %d\n", buff_offset);
+	// kprintf("arg_buff_count %d\n", arg_buff_count);
+	// kprintf("buff_size %d\n", buff_size);
 
 	/* Warp to user mode. */
 	enter_new_process(num_args,			/* argc  */ 
-			(userptr_t)top_of_stack,	/* userspace addr of argv */
-			(userptr_t)top_of_stack,	/* userspace addr of environment */
+			(userptr_t)entry_stack,		/* userspace addr of argv */
+			NULL,						/* userspace addr of environment */
 			stackptr, entrypoint);
 
 	/* enter_new_process does not return. */
