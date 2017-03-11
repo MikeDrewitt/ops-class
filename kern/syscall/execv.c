@@ -64,7 +64,7 @@ sys_execv(int32_t *retval, const char *program, char **args)
 
 	//copys the arguments character by character and adds a buffer also 
 	//sets the pointers
-	// kprintf("THIS IS THE KERNEL BUFFER\n");
+	kprintf("THIS IS THE KERNEL BUFFER\n");
 	
 	while (cur_arg != num_args) {
 		int arg_len = 0;	
@@ -72,15 +72,17 @@ sys_execv(int32_t *retval, const char *program, char **args)
 		while (**args != 0) {
 			arg_buff_count++;
 			buff_size++;
+			//assignes the pointer
 			if(is_first){
 				is_first = 0;
-				pointer_void = pointer_char;
-				//kprintf("first char is at %p\n", pointer_void);
+				pointer_void =(void *) pointer_char;
+				kprintf("k_pointer = %p\n", pointer_void);
+				kprintf("k_pointer -> %s\n", (char *)pointer_void);
 				pointer_void+=4;
 				buff_size+=4;
 			}
 			copyin((const_userptr_t)*args,pointer_char,1);
-			// kprintf("karguments = %s        address = %p \n",pointer_char, (void *)pointer_char);
+			kprintf("k_arguments = %s        address = %p \n",pointer_char, (void *)pointer_char);
 			//kprintf("please dont be 0x7... = %p\n", (void *)pointer_char);
 			*args+=1;
 			arg_len++;
@@ -93,7 +95,7 @@ sys_execv(int32_t *retval, const char *program, char **args)
 					arg_buff_count++;
 					buff_size++;
 					*pointer_char = '\0';
-					// kprintf("karguments = %s       address = %p \n",pointer_char, (void *)pointer_char);
+					kprintf("k_arguments = %s       address = %p \n",pointer_char, (void *)pointer_char);
 					pointer_char++;
 				}
 			}
@@ -103,7 +105,7 @@ sys_execv(int32_t *retval, const char *program, char **args)
 					arg_buff_count++;
 					buff_size++;
 					*pointer_char = '\0';
-					// kprintf("karguments = %s       address = %p \n",pointer_char, (void *)pointer_char);
+					kprintf("k_arguments = %s       address = %p \n",pointer_char, (void *)pointer_char);
 					//kprintf("please be 0x7...  = %p\n",(void *)pointer_char);
 				
 					pointer_char+=1;
@@ -116,6 +118,7 @@ sys_execv(int32_t *retval, const char *program, char **args)
 				arg_buff_count++;
 				buff_size++;
 				*pointer_char = '\0';
+				kprintf("k_arguments = %s       address = %p \n",pointer_char, (void *)pointer_char);
 				pointer_char+=1;
 			}
 		}
@@ -125,6 +128,8 @@ sys_execv(int32_t *retval, const char *program, char **args)
 	buff_size+=4;
 	//kprintf("the length of the arg buffer 36 = %d\n",buff_size);
 	pointer_void = NULL;
+	kprintf("k_pointer = %p\n", pointer_void);
+	kprintf("k_pointer -> %s\n", (char *)pointer_void);
 
 	/* BEGIN RUNPROGRAM  */
 
@@ -203,7 +208,7 @@ sys_execv(int32_t *retval, const char *program, char **args)
 
 //	stackptr-=num_args*4;	
 //	top_of_stack = stackptr;
-	// kprintf("THIS IS THE USER STACK\n");
+	kprintf("THIS IS THE USER STACK\n");
 
 	/*
 	//int pointers = 0;
@@ -225,8 +230,8 @@ sys_execv(int32_t *retval, const char *program, char **args)
 	for (; i < buff_size; i++) {
 			
 		copyout((const void *)k_buff, (userptr_t)arg_pointer, 1);
-		// kprintf("agruments = \'%s\'  address = %p \n", 
-		//	   (char *)arg_pointer, (void *)arg_pointer);
+		 kprintf("agruments = \'%s\'  address = %p \n", 
+			   (char *)arg_pointer, (void *)arg_pointer);
 
 
 		if (new_arg && *(char *)arg_pointer != 0) {
@@ -234,7 +239,8 @@ sys_execv(int32_t *retval, const char *program, char **args)
 			top_buff = (void *)arg_pointer;
 
 			copyout((const void *)top_buff, (userptr_t)top_of_stack, 4);
-			// kprintf("pointer -> %p\n", (void *)top_of_stack);
+			kprintf("pointer = %p\n", (void *)top_of_stack);
+			kprintf("pointer -> %s\n",(char *)top_of_stack);
 			top_of_stack += 4;
 			top_buff += 4;
 
@@ -250,7 +256,10 @@ sys_execv(int32_t *retval, const char *program, char **args)
 		arg_pointer +=1;
 		k_buff += 1;
 	}
-
+	//(void *)top_of_stack = NULL;
+	copyout((const void *)top_buff, (userptr_t)top_of_stack, 4);
+	kprintf("pointer = %p\n",(void *)top_of_stack);
+	kprintf("pointer ->\' %s\'\n",(char *)top_of_stack);
 /* 
 	for (i = (num_args+1)*4; i < buff_size; i++) {
 		if (i >= 0 && i < ((num_args+1)*4)) {
@@ -297,10 +306,18 @@ sys_execv(int32_t *retval, const char *program, char **args)
 	// kprintf("buff_size %d\n", buff_size);
 
 	/* Warp to user mode. */
+
+
+
+
+	kprintf("\n\nnum_args = %d\n", num_args);
+	kprintf("entry_stack = %p\n", (void *)entry_stack);
+	vaddr_t bottom_of_stack = static_top_of_stack- buff_size;
+	kprintf("bottom_of_stack = %p\n\n", (void *)bottom_of_stack);
 	enter_new_process(num_args,			/* argc  */ 
 			(userptr_t)entry_stack,		/* userspace addr of argv */
 			NULL,						/* userspace addr of environment */
-			stackptr, entrypoint);
+			bottom_of_stack, entrypoint);
 
 
 	/* enter_new_process does not return. */
