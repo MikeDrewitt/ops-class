@@ -39,31 +39,42 @@ sys_open(int32_t *retval, const char *filename, int flags)
 
 	file = kmalloc(sizeof(*file));
 
+	int result;
+	char name_copy[128];
+
+	result = copyinstr((const_userptr_t)filename, name_copy, 128, 0);
+
+	if (result) {
+		*retval = EFAULT;
+		return -1;
+	}
+
 	if (filename == NULL) {
-		*retval = -1;
-		return EFAULT;
+		*retval = EFAULT;
+		return -1;
 	}
-/*
-	if (flags != O_RDONLY && flags != O_WRONLY && flags != O_RDWR) {
-		*retval = -1;
-		return EINVAL;
+
+	if (*filename == 0) {
+		*retval = EINVAL;
+		return -1;
 	}
-*/	
+
+	if (flags < 0 || flags > 127) {
+		*retval = EINVAL;
+		return -1;
+	}
+	
 	file->ft_lock = lock_create("file_lock");
 	
 	file->flag = flags;
 	file->offset = 0;
 	file->ref_counter = 1;
 
-	int result;
-	char name_copy[128];
-
-	copyinstr((const_userptr_t)filename, name_copy, 128, 0);
 	result = vfs_open(name_copy, flags, 0664, &v);		
 
 	if (result) {
-		*retval = -1;
-		return EIO;
+		*retval = EIO;
+		return -1;
 	}
 
 	int file_descriptor = 0; //position in the file table

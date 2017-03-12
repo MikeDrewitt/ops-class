@@ -19,14 +19,14 @@ sys_lseek(int64_t *retval, int fd, off_t pos, int whence)
 	 */
 	
 
-	if (curthread->t_proc->p_filetable[fd] == NULL) {
-		*retval = -1;
-		return EBADF;
+	if (fd < 0 || fd > 64 || curthread->t_proc->p_filetable[fd] == NULL) {
+		*retval = EBADF;
+		return -1;
 	}
 
 	if (pos < 0) {
-		*retval = -1;
-		return EINVAL;
+		*retval = EINVAL;
+		return -1;
 	}
 
 	struct stat statbuf;
@@ -59,8 +59,6 @@ sys_lseek(int64_t *retval, int fd, off_t pos, int whence)
 
 	}
 	
-	*retval = -1;
-
-
-	return EINVAL;
+	*retval = EINVAL;
+	return -1;
 }
