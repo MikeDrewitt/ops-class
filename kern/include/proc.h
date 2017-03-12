@@ -105,7 +105,9 @@ struct proc {
     struct trapframe *p_tf;
 };
 
+
 struct proc *pid_table[64];
+void *k_buff;
 /* This is the process structure for the kernel and for kernel-only threads. */
 extern struct proc *kproc;
 

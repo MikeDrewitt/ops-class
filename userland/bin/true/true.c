@@ -44,7 +44,9 @@ main(void)
 	const char *args[20];
 
 	args[0] = "/bin/false";
-	args[1] = NULL;
+	args[1] = "run";
+	args[2] = "now";
+	args[3] = NULL;
 
 	const char buf[10] = "/bin/false";
 

@@ -51,6 +51,7 @@
 #include <vfs.h>
 #include <syscall.h>
 #include <lib.h>
+#include <limits.h>
 
 #include <kern/fcntl.h>
 /*
@@ -253,6 +254,7 @@ proc_create_runprogram(const char *name)
 		return NULL;
 	}
 
+	k_buff = kmalloc(ARG_MAX);
 	/* VM fields */
 
 	newproc->p_addrspace = NULL;
