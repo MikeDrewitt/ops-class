@@ -42,9 +42,13 @@ int
 main(void)
 {
 
-	printf("CALLING FROM FALSE!\n");	
+	printf("running ... \n");
 
-	
+	const char *test = "";
+
+
+	printf("%d, %d\n", *test, sizeof(*test));
+
 	/* Just exit with a failure code. */
 	 exit(0);
 }
