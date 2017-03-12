@@ -30,7 +30,7 @@ sys_write(int fd, const void *buf, size_t nbytes, int32_t *retval)
 	int result;
 
 	// EBADF fd is not a valid file descriptor, or was not opened for writing
-	if (curproc->p_filetable[fd] == NULL || fd < 0 || fd > 64) {
+	if (fd < 0 || fd > 64 || curproc->p_filetable[fd] == NULL) {
 		*retval = EBADF;
 		return -1;
 	}

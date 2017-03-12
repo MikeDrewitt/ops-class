@@ -27,8 +27,7 @@ sys_read(int32_t *retval, int fd, void *buf, size_t buflen)
 
 	// EBADF fd is not a valid file descriptor, or was not opened for writing 
 	
-	kprintf("fd: %d\n", fd);
-	if (curthread->t_proc->p_filetable[fd] == NULL || fd < 0 || fd > 64) {
+	if (fd < 0 || fd > 64 || curthread->t_proc->p_filetable[fd] == NULL) {
 		*retval = EBADF;
 		return -1;
 	}
