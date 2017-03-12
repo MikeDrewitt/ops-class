@@ -28,7 +28,13 @@ sys_close(int32_t *retval, int fd)
 {
 
 
-	if (fd < 0 || curthread->t_proc->p_filetable[fd] == NULL) {
+	if (fd < 0) {
+		*retval = -1;
+		return EBADF;
+	}
+		
+		
+	if (curthread->t_proc->p_filetable[fd] == NULL) {
 		*retval = -1;
 		return EBADF;
 	}

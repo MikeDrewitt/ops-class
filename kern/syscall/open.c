@@ -58,9 +58,8 @@ sys_open(int32_t *retval, const char *filename, int flags)
 		*retval = EINVAL;
 		return -1;
 	}
-	kprintf("filename %d\n", *filename);
-	
-	if (flags != O_RDONLY && flags != O_WRONLY && flags != O_RDWR) {
+
+	if (flags < 0 || flags > 127) {
 		*retval = EINVAL;
 		return -1;
 	}
