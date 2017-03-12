@@ -28,15 +28,15 @@ sys_close(int32_t *retval, int fd)
 {
 
 
-	if (fd < 0) {
-		*retval = -1;
-		return EBADF;
+	if (fd < 0 || fd > 64) {
+		*retval = EBADF;
+		return -1;
 	}
 		
 		
 	if (curthread->t_proc->p_filetable[fd] == NULL) {
-		*retval = -1;
-		return EBADF;
+		*retval = EBADF;
+		return -1;
 	}
 	
 	lock_destroy(curthread->t_proc->p_filetable[fd]->ft_lock);
