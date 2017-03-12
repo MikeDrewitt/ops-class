@@ -29,10 +29,10 @@ sys_write(int fd, const void *buf, size_t nbytes, int32_t *retval)
 
 	int result;
 
-	// EBADF fd is not a valid file descriptor, or was not opened for writing 
-	if (curproc->p_filetable[fd] == NULL) {
-		*retval = -1;
-		return EBADF;
+	// EBADF fd is not a valid file descriptor, or was not opened for writing
+	if (curproc->p_filetable[fd] == NULL || fd < 0 || fd > 64) {
+		*retval = EBADF;
+		return -1;
 	}
 
 	struct iovec iov;
@@ -60,8 +60,8 @@ sys_write(int fd, const void *buf, size_t nbytes, int32_t *retval)
 	lock_release(curproc->p_filetable[fd]->ft_lock);
 
 	if(result){
-		*retval = -1;
-		return EIO;
+		*retval = EIO;
+		return -1;
 	}
 // u.uio_resid is updated based on how many bites are written during 
 // VOP_write

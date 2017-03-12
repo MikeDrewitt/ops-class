@@ -26,9 +26,11 @@ sys_read(int32_t *retval, int fd, void *buf, size_t buflen)
 	int result;
 
 	// EBADF fd is not a valid file descriptor, or was not opened for writing 
-	if (curthread->t_proc->p_filetable[fd] == NULL) {
-		*retval = -1;
-		return EBADF;
+	
+	kprintf("fd: %d\n", fd);
+	if (curthread->t_proc->p_filetable[fd] == NULL || fd < 0 || fd > 64) {
+		*retval = EBADF;
+		return -1;
 	}
 	
 	struct iovec iov;
@@ -50,8 +52,8 @@ sys_read(int32_t *retval, int fd, void *buf, size_t buflen)
 
 
 	if(result){
-		*retval = -1;
-		return EIO;
+		*retval = EIO;
+		return -1;
 	}
 // u.uio_resid is updated based on how many bites are written during 
 // VOP_write
