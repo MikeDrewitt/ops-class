@@ -63,6 +63,8 @@ sys_open(int32_t *retval, const char *filename, int flags)
 		*retval = EINVAL;
 		return -1;
 	}
+
+	// lock_acquire(curproc->p_full_lock);
 	
 	file->ft_lock = lock_create("file_lock");
 	
@@ -78,15 +80,17 @@ sys_open(int32_t *retval, const char *filename, int flags)
 	}
 
 	int file_descriptor = 0; //position in the file table
-	while (curthread->t_proc->p_filetable[file_descriptor] != NULL) {	
+	while (curthread->t_proc->p_filetable[file_descriptor] != NULL && file_descriptor < 65) {	
 		file_descriptor++;
 	}//run out of space? 
+	
+	// kprintf("fd: %d, has been opened\n", file_descriptor);
 
 	file->ft_vnode = v;
 	curthread->t_proc->p_filetable[file_descriptor] = file;
 
-	*retval = file_descriptor;
-	
+	// lock_release(curproc->p_full_lock);
 
+	*retval = file_descriptor;
 	return 0;
 }

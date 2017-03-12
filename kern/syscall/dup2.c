@@ -13,29 +13,38 @@ sys_dup2(int32_t *retval, int oldfd, int newfd)
 	// (void)retval;
 	// (void)oldfd;
 	// (void)newfd;
-
-	if (curproc->p_filetable[oldfd] == NULL || newfd > 64 || newfd < 0) {
+	
+	if (newfd > 64 || newfd < 0 || curproc->p_filetable[oldfd] == NULL) {
 		*retval = EBADF;
 		return -1;
 	}
 
-	/* If the file at that descriptor was alread open close the file  */
+	// If the file at that descriptor was alread open close the file
 	if (curproc->p_filetable[newfd] != NULL) {
 		int err = sys_close(retval, newfd);
 		if (err) {
 			return -1;
 		}
-	}
+	}	
+	
+	kprintf("** oldfd: %d, newfd %d\n", oldfd, newfd);
+	
+	lock_acquire(curproc->p_filetable[oldfd]->ft_lock);
 
-	curproc->p_filetable[oldfd]->ref_counter += 1;
+	kprintf("new file lock name: %s\n", curproc->p_filetable[newfd]->ft_lock->lk_name);
+	kprintf("old file lock name: %s\n", curproc->p_filetable[oldfd]->ft_lock->lk_name);
+	
+	kprintf("offset 1: %d 2: %d\n", curproc->p_filetable[oldfd]->offset, curproc->p_filetable[newfd]->offset);
 
-	/* Points to the same location  */
-	curproc->p_filetable[newfd] = curproc->p_filetable[oldfd];
+	curproc->p_filetable[oldfd]->ref_counter += 1;				// increase times this file is open
+	curproc->p_filetable[newfd] = curproc->p_filetable[oldfd];	// copy over the pointer to the file
 
-	kprintf("oldfd: %d, newfd: %d\n", oldfd, newfd);
-	// kprintf("offset 1: %d 2: %d\n", curproc->p_filetable[oldfd]->offset, curproc->p_filetable[newfd]->offset);
+	kprintf("offset 1: %d 2: %d\n", curproc->p_filetable[oldfd]->offset, curproc->p_filetable[newfd]->offset);
+	
+	lock_release(curproc->p_filetable[oldfd]->ft_lock);
 
-	kprintf("end dup2\n");
+	kprintf("** oldfd: %d, newfd: %d\n", oldfd, newfd);
+
 	*retval = newfd;
 	return 0;
 }
