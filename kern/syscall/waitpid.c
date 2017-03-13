@@ -132,6 +132,8 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 
 	/*
 	 * when done waiting return the exit status from _exit() in *status
+	kprintf();
+	kprintf();
 	 */
 
 	*retval = pid;

@@ -71,6 +71,8 @@ dodup2(int ofd, int nfd, const char *file)
 	int r;
 
 	r = dup2(ofd, nfd);
+	printf("-->\n");
+
 	if (r < 0) {
 		err(1, "%s: dup2", file);
 	}
@@ -145,6 +147,8 @@ cat(void)
 	rfd = doopen(INFILE, O_RDONLY);
 	wfd = doopen(OUTFILE, O_WRONLY|O_CREAT|O_TRUNC);
 
+	// printf("rfd: %d, wfd: %d\n", rfd, wfd);
+
 	pid = fork();
 	if (pid < 0) {
 		err(1, "fork");
@@ -156,6 +160,7 @@ cat(void)
 		dodup2(wfd, STDOUT_FILENO, OUTFILE);
 		doclose(rfd, INFILE);
 		doclose(wfd, OUTFILE);
+		printf("***\n");	
 		args[0] = "cat";
 		args[1] = NULL;
 		execv(PATH_CAT, (char **)args);
@@ -189,6 +194,8 @@ main(void)
 	tprintf("Running cat < %s > %s\n", INFILE, OUTFILE);
 	cat();
 	nprintf(".");
+	printf("returned\n");	
+	
 
 	tprintf("Checking %s...\n", OUTFILE);
 	chkfile();

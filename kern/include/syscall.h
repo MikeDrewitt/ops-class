@@ -64,6 +64,7 @@ int sys_open(int32_t *retval, const char *filename, int flags);
 int sys_close(int32_t *retval, int fd);
 int sys___time(userptr_t user_seconds, userptr_t user_nanoseconds);
 int sys_execv(int32_t *retval, const char *program, char **args);
+int sys_dup2(int32_t *retval, int oldfd, int newfd);
 
 void sys__exit(int32_t *retval, int errorcode);
 

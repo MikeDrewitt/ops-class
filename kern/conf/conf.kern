@@ -397,6 +397,7 @@ file      syscall/fork.c
 file      syscall/waitpid.c
 file      syscall/getpid.c
 file      syscall/execv.c
+file      syscall/dup2.c
 
 #
 # Startup and initialization
