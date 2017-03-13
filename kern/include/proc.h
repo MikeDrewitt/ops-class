@@ -107,7 +107,7 @@ struct proc {
 
 
 struct proc *pid_table[64];
-void *k_buff;
+void *carl_k_buff[ARG_MAX/4];
 /* This is the process structure for the kernel and for kernel-only threads. */
 extern struct proc *kproc;
 
