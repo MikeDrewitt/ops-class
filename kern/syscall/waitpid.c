@@ -54,6 +54,8 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 	// (void)status;
 	(void)options;
 
+	// kprintf("WAIT => cur pid: %d\n", curproc->pid);
+
 	// kprintf("WAIT => param pid: %d\n", pid);
 	
 	// kprintf("WAITING ON => name: %s\n", pid_table[pid]->p_name);
@@ -98,17 +100,19 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 	void *safe_status = NULL;
 	int result = copyin((const_userptr_t)status, &safe_status, 4);
 
-	if (result) {	
+	if (result) {
+		
 		if (status == NULL) {
 			P(pid_table[pid]->p_sem);
 			
 			proc_destroy(pid_table[pid]);
 
 			lock_release(curproc->p_full_lock);
-		
+
 			*retval = pid;
 			return 0;
 		}
+		
 		
 		lock_release(curproc->p_full_lock);
 		*retval = EFAULT;
