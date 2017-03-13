@@ -231,10 +231,6 @@ mips_trap(struct trapframe *tf)
 
 		syscall(tf);
 
-		if (flag) {
-			kprintf("hullo\n");
-		}
-
 		goto done;
 	}
 
@@ -366,7 +362,7 @@ mips_trap(struct trapframe *tf)
 	KASSERT(SAME_STACK(cpustacks[curcpu->c_number]-1, (vaddr_t)tf));
 
 	if (flag) {
-		kprintf("wtf\n");
+		kprintf("Back to usermode from dup2\n");
 	}
 }
 

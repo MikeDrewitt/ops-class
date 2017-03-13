@@ -64,8 +64,6 @@ sys_open(int32_t *retval, const char *filename, int flags)
 		return -1;
 	}
 
-	// lock_acquire(curproc->p_full_lock);
-	
 	file->ft_lock = lock_create("file_lock");
 	
 	file->flag = flags;
@@ -88,8 +86,6 @@ sys_open(int32_t *retval, const char *filename, int flags)
 
 	file->ft_vnode = v;
 	curthread->t_proc->p_filetable[file_descriptor] = file;
-
-	// lock_release(curproc->p_full_lock);
 
 	*retval = file_descriptor;
 	return 0;

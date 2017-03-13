@@ -40,8 +40,6 @@ sys_write(int fd, const void *buf, size_t nbytes, int32_t *retval)
 	
 	lock_acquire(curproc->p_filetable[fd]->ft_lock);
 
-	// kprintf("%s\n",(char *)buf);
-
 	iov.iov_ubase = (userptr_t)buf;
 	iov.iov_len = nbytes;
 	u.uio_iov = &iov;
@@ -52,7 +50,7 @@ sys_write(int fd, const void *buf, size_t nbytes, int32_t *retval)
 	u.uio_rw = UIO_WRITE;
 	u.uio_space = curthread->t_proc->p_addrspace;//doesnt seem right
 
-	result = VOP_WRITE(curthread->t_proc->p_filetable[fd]->ft_vnode, &u);
+	result = VOP_WRITE(curproc->p_filetable[fd]->ft_vnode, &u);
 
 	*retval = nbytes; // - u.uio_resid;
 	curproc->p_filetable[fd]->offset += nbytes - u.uio_resid;
