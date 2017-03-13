@@ -7,10 +7,12 @@
 #include <vfs.h>
 #include <syscall.h>
 #include <lib.h>
+#include <copyinout.h>
 
 #include <synch.h>
 
 #include <kern/wait.h>
+#include <kern/errno.h>
 
 /*
  * Possible use of CV to wait until the pid is exited from.
@@ -52,8 +54,6 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 	// (void)status;
 	(void)options;
 
-	// if pid DNE then fail.
-	
 	// kprintf("WAIT => param pid: %d\n", pid);
 	
 	// kprintf("WAITING ON => name: %s\n", pid_table[pid]->p_name);
@@ -61,18 +61,67 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 	// kprintf("WAITING ON  => Parent pid: %d\n", pid_table[pid]->parent_pid);
 	// kprintf("WAITING ON  => running: %d\n", pid_table[pid]->running);
 	// kprintf("WAITING ON  => exitcode: %d\n", pid_table[pid]->exitcode);
+		
+	if (pid < 0 || pid > 64 || pid_table[pid] == NULL) {
+		*retval = ESRCH;
+		return -1;
+	}
+
+	if (status != NULL && ((int)status % 4) != 0) {
+		*retval = EFAULT;
+		return -1;
+	}
+
+	if (curproc->pid == pid) {
+		*retval = EFAULT;
+		return -1;
+	}
+
+	if (options < 0 || options > 2) {
+		*retval = EINVAL;
+		return -1;
+	}
+
+	if (curproc->pid != pid_table[pid]->parent_pid) {
+		*retval = ECHILD;
+		return -1;
+	}
+
+	if (options == WNOHANG) {
+		if (pid_table[pid]->p_sem->sem_count == 0) {
+			return 0;
+		}
+	}
 
 	lock_acquire(curproc->p_full_lock);
 	
+	void *safe_status = NULL;
+	int result = copyin((const_userptr_t)status, &safe_status, 4);
+
+	if (result) {	
+		if (status == NULL) {
+			P(pid_table[pid]->p_sem);
+			
+			proc_destroy(pid_table[pid]);
+
+			lock_release(curproc->p_full_lock);
+		
+			*retval = pid;
+			return 0;
+		}
+		
+		lock_release(curproc->p_full_lock);
+		*retval = EFAULT;
+		return -1;
+	}
 
 	// Wait here until _exit() is called by pid
 	P(pid_table[pid]->p_sem);
 
-	if (status != NULL) {
+	if (safe_status != NULL) {
 		*status = pid_table[pid]->exitcode;
 	}
 
-	// kprintf("oh ffs\n");
 	proc_destroy(pid_table[pid]);
 
 	lock_release(curproc->p_full_lock);
