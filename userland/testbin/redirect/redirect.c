@@ -158,9 +158,9 @@ cat(void)
 		/* child */
 		dodup2(rfd, STDIN_FILENO, INFILE);
 		dodup2(wfd, STDOUT_FILENO, OUTFILE);
-		
 		doclose(rfd, INFILE);
 		doclose(wfd, OUTFILE);
+		printf("***\n");	
 		args[0] = "cat";
 		args[1] = NULL;
 		execv(PATH_CAT, (char **)args);

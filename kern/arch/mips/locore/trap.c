@@ -129,7 +129,6 @@ mips_trap(struct trapframe *tf)
 	/*bool isutlb; -- not used */
 	bool iskern;
 	int spl;
-	int flag = 0;
 
 	/* The trap frame is supposed to be 35 registers long. */
 	KASSERT(sizeof(struct trapframe)==(35*4));
@@ -224,10 +223,6 @@ mips_trap(struct trapframe *tf)
 	
 		DEBUG(DB_SYSCALL, "syscall: #%d, args %x %x %x %x\n",
 		      tf->tf_v0, tf->tf_a0, tf->tf_a1, tf->tf_a2, tf->tf_a3);
-
-		if (tf->tf_v0 == 48) {
-			flag = 1;
-		}
 
 		syscall(tf);
 
@@ -360,10 +355,6 @@ mips_trap(struct trapframe *tf)
 	 * to find out now.
 	 */
 	KASSERT(SAME_STACK(cpustacks[curcpu->c_number]-1, (vaddr_t)tf));
-
-	if (flag) {
-		kprintf("Back to usermode from dup2\n");
-	}
 }
 
 /*

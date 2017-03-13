@@ -49,7 +49,6 @@ sys_read(int32_t *retval, int fd, void *buf, size_t buflen)
 
 	result = VOP_READ(curproc->p_filetable[fd]->ft_vnode, &u);
 
-
 	if(result){
 		lock_release(curproc->p_filetable[fd]->ft_lock);
 
