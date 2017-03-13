@@ -51,6 +51,8 @@ sys_read(int32_t *retval, int fd, void *buf, size_t buflen)
 
 
 	if(result){
+		lock_release(curproc->p_filetable[fd]->ft_lock);
+
 		*retval = EIO;
 		return -1;
 	}

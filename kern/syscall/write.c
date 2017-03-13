@@ -37,7 +37,7 @@ sys_write(int fd, const void *buf, size_t nbytes, int32_t *retval)
 
 	struct iovec iov;
 	struct uio u;
-
+	
 	lock_acquire(curproc->p_filetable[fd]->ft_lock);
 
 	// kprintf("%s\n",(char *)buf);

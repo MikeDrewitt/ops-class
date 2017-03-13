@@ -71,7 +71,7 @@ dodup2(int ofd, int nfd, const char *file)
 	int r;
 
 	r = dup2(ofd, nfd);
-	// printf("-->\n");
+	printf("-->\n");
 
 	if (r < 0) {
 		err(1, "%s: dup2", file);
@@ -157,9 +157,8 @@ cat(void)
 	if (pid == 0) {
 		/* child */
 		dodup2(rfd, STDIN_FILENO, INFILE);
-		// printf("returned 1\n");
 		dodup2(wfd, STDOUT_FILENO, OUTFILE);
-		// printf("returned 2\n");
+		
 		doclose(rfd, INFILE);
 		doclose(wfd, OUTFILE);
 		args[0] = "cat";
