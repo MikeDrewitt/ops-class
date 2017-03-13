@@ -40,17 +40,10 @@ int
 main(void)
 {
 
+	int res = lseek(-1, 0, 2);
 
-	const char *args[20];
-
-	args[0] = "/bin/false";
-	args[1] = "run";
-	args[2] = "now";
-	args[3] = NULL;
-
-	const char buf[10] = "/bin/false";
-
-	execv(buf, (char **)args);
+	printf("res: %d\n", res);
+		
 
 	return 1;
 }

@@ -187,7 +187,8 @@ syscall(struct trapframe *tf)
 		 * userlevel to a return value of -1 and the error
 		 * code in errno.
 		 */
-
+	
+		if (seek) retval = retval_long;
 
 
 		tf->tf_v0 = retval;

@@ -29,9 +29,17 @@ sys_lseek(int64_t *retval, int fd, off_t pos, int whence)
 		return -1;
 	}
 
+	int seekable = VOP_ISSEEKABLE(curproc->p_filetable[fd]->ft_vnode); 
+	if (!seekable) {
+		*retval = ESPIPE;
+		return -1;
+	}
+
 	struct stat statbuf;
 	
 	VOP_STAT(curproc->p_filetable[fd]->ft_vnode, &statbuf);
+
+
 /*
 	kprintf("#----------------------#\n");
 	kprintf("fd: %d\n", fd);
@@ -42,6 +50,7 @@ sys_lseek(int64_t *retval, int fd, off_t pos, int whence)
 	kprintf("SEEK: %d\n", whence);
 	kprintf("#----------------------#\n");
 */
+
 	if (whence == SEEK_SET) {
 		curproc->p_filetable[fd]->offset = pos;
 		*retval = curthread->t_proc->p_filetable[fd]->offset;

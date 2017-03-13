@@ -78,6 +78,8 @@ lseek_file_stdin(void)
 	int result = 0;
 
 	report_begin("lseek stdin when open on file");
+	
+	printf("hullllo\n");
 
 	/* fork so we don't affect our own stdin */
 	pid = fork();
