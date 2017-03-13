@@ -71,8 +71,8 @@ dodup2(int ofd, int nfd, const char *file)
 	int r;
 
 	r = dup2(ofd, nfd);
-	
-	printf("after dup\n");
+	// printf("-->\n");
+
 	if (r < 0) {
 		err(1, "%s: dup2", file);
 	}
@@ -147,7 +147,7 @@ cat(void)
 	rfd = doopen(INFILE, O_RDONLY);
 	wfd = doopen(OUTFILE, O_WRONLY|O_CREAT|O_TRUNC);
 
-	printf("rfd: %d, wfd: %d\n", rfd, wfd);
+	// printf("rfd: %d, wfd: %d\n", rfd, wfd);
 
 	pid = fork();
 	if (pid < 0) {
@@ -157,9 +157,9 @@ cat(void)
 	if (pid == 0) {
 		/* child */
 		dodup2(rfd, STDIN_FILENO, INFILE);
-		printf("returned 1\n");
+		// printf("returned 1\n");
 		dodup2(wfd, STDOUT_FILENO, OUTFILE);
-		printf("returned 2\n");
+		// printf("returned 2\n");
 		doclose(rfd, INFILE);
 		doclose(wfd, OUTFILE);
 		args[0] = "cat";

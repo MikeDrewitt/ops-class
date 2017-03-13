@@ -53,7 +53,7 @@ sys_close(int32_t *retval, int fd)
 	kfree(curthread->t_proc->p_filetable[fd]);
 	curthread->t_proc->p_filetable[fd] = NULL;
 
-	kprintf("fd: %d, has been opened\n",  fd);
+	// kprintf("fd: %d, has been closed\n",  fd);
 
 	*retval = 0;
 	
