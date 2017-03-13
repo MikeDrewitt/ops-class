@@ -16,7 +16,13 @@ sys_dup2(int32_t *retval, int oldfd, int newfd)
 
 	if (newfd > 64 || newfd < 0 || curproc->p_filetable[oldfd] == NULL) {
 		*retval = EBADF;
+	lock_release(curproc->p_filetable[oldfd]->ft_lock);
+	lock_release(curproc->p_filetable[oldfd]->ft_lock);
+	lock_release(curproc->p_filetable[oldfd]->ft_lock);
+	lock_release(curproc->p_filetable[oldfd]->ft_lock);
+	lock_release(curproc->p_filetable[oldfd]->ft_lock);
 		return -1;
+	lock_release(curproc->p_filetable[oldfd]->ft_lock);
 	}
 	
 	lock_acquire(curproc->p_filetable[oldfd]->ft_lock);
