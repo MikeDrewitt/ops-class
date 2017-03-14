@@ -39,7 +39,7 @@ sys_open(int32_t *retval, const char *filename, int flags)
 
 	file = kmalloc(sizeof(*file));
 
-	kprintf("filename: %s flags: %d\n", filename, flags);
+	// kprintf("filename: %s flags: %d\n", filename, flags);
 
 	int result;
 	char name_copy[128];
@@ -75,7 +75,7 @@ sys_open(int32_t *retval, const char *filename, int flags)
 	result = vfs_open(name_copy, flags, 0, &v);		
 
 	if (result) {
-		kprintf("fuck\n");
+		// kprintf("fuck\n");
 		*retval = EIO;
 		return -1;
 	}
