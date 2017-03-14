@@ -159,7 +159,7 @@ cat(void)
 		dodup2(rfd, STDIN_FILENO, INFILE);
 		dodup2(wfd, STDOUT_FILENO, OUTFILE);
 		doclose(rfd, INFILE);
-		kprintf("hullo\n");
+		printf("hullo\n");
 		doclose(wfd, OUTFILE);
 		printf("***\n");	
 		args[0] = "cat";
