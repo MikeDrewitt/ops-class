@@ -27,7 +27,7 @@ int
 sys_close(int32_t *retval, int fd)
 {
 
-	if (fd < 0 || fd > 64) {
+	if (fd < 0 || fd > FILE_TOP) {
 		*retval = EBADF;
 		return -1;
 	}

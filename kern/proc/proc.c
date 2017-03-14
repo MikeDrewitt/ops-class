@@ -62,6 +62,7 @@ process for the kernel; this holds all the kernel-only threads.
  */
 struct proc *kproc;
 
+
 /*
  * Create a proc structure.
  */
@@ -198,7 +199,7 @@ proc_destroy(struct proc *proc)
 	// kfree(proc->p_tf);
 
 	int i;
-	for (i = 0; i < 64; i++) {
+	for (i = 0; i < FILE_TOP; i++) {
 		if (proc->p_filetable[i] != NULL) {
 			proc->p_filetable[i]->ref_counter -= 1;
 			
@@ -277,7 +278,7 @@ proc_create_runprogram(const char *name)
 	// set filetable to all NULL,
 	// all entries in 64 array.
 	int i;
-	for (i = 0; i < 64; i++) {
+	for (i = 0; i < FILE_TOP; i++) {
 		newproc->p_filetable[i] = 0;
 	} 
 
@@ -292,7 +293,9 @@ proc_create_runprogram(const char *name)
 	in_file = kmalloc(sizeof(*in_file));
 	out_file = kmalloc(sizeof(*out_file));
 	err_file = kmalloc(sizeof(*err_file));	
-	
+
+	pid_lock = lock_create("pid_table_lock");
+
 	in_file->ft_lock = lock_create("in_lock");
 	out_file->ft_lock = lock_create("out_lock");	
 	err_file->ft_lock = lock_create("err_lock");

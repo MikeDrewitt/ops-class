@@ -64,7 +64,7 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 	// kprintf("WAITING ON  => running: %d\n", pid_table[pid]->running);
 	// kprintf("WAITING ON  => exitcode: %d\n", pid_table[pid]->exitcode);
 		
-	if (pid < 0 || pid > 64 || pid_table[pid] == NULL) {
+	if (pid < 0 || pid > 66 || pid_table[pid] == NULL) {
 		*retval = ESRCH;
 		return -1;
 	}
@@ -127,6 +127,7 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 	}
 
 	proc_destroy(pid_table[pid]);
+	pid_table[pid] = NULL;
 
 	lock_release(curproc->p_full_lock);
 

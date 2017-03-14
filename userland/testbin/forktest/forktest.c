@@ -189,8 +189,8 @@ test(int nowait)
 		err(1, "Failed to open file to write data into\n");
 	}
 	
-
 	pid0 = dofork();
+	
 	nprintf(".");
 	write(fd, "A", 1);
 	depth++;

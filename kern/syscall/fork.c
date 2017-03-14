@@ -68,7 +68,7 @@ sys_fork(int32_t *retval) {
 
 	int bomb;
 	int open_space = 0;
-	for (bomb = 0; bomb < 64; bomb++) {
+	for (bomb = 0; bomb < PID_TOP; bomb++) {
 		if (pid_table[bomb] == NULL) {
 			// there's an open space
 			open_space = 1;
@@ -113,17 +113,21 @@ sys_fork(int32_t *retval) {
 	if (kill) {
 		kfree(child_tf);
 		*retval = ENOMEM;
+		
 		return -1;
 	}
 	
 	child_proc->p_addrspace = child_addr;
 
 	int i = 0;
-	while (i < 64) {
+	while (i < PID_TOP) {
 		if (curproc->p_filetable[i] != NULL) {
+
 			curproc->p_filetable[i]->ref_counter += 1;
+			// kprintf("ref: %d\n", curproc->p_filetable[i]->ref_counter);
 		}
 		
+		// kprintf("iter: %d\n", i);
 		child_proc->p_filetable[i] = curproc->p_filetable[i];
 
 		// kprintf("child: %p\n", child_proc->p_filetable[i]);
@@ -137,8 +141,8 @@ sys_fork(int32_t *retval) {
 
 
 	int new_pid = 1;
-	while (pid_table[new_pid] != NULL && new_pid < 64 ) {
-		new_pid++; // probably will introduce bug if > 64 processes. 
+	while (pid_table[new_pid] != NULL && new_pid < PID_TOP) {
+		new_pid++; // probably will introduce bug if > PID_TOP processes. 
 	}
 
 	if (pid_table[new_pid] == NULL) {	
@@ -150,10 +154,12 @@ sys_fork(int32_t *retval) {
 		// kprintf("\n");
 		kill = vfs_getcurdir(&child_proc->p_cwd);
 		if (kill) {
-			kprintf("vfs_getcwd failed (%s)\n", strerror(kill));
+			//kprintf("vfs_getcwd failed (%s)\n", strerror(kill));
 			*retval = kill;
+			
 			return -1;
 		}
+
 
 		pid_table[new_pid] = child_proc;
 	}
@@ -161,6 +167,7 @@ sys_fork(int32_t *retval) {
 		// panic("You tried to overwrite another proccess.\n");
 		// kprintf("No Room!\n");
 		*retval = ENPROC;
+		
 		return -1;
 	}
 	
@@ -168,6 +175,7 @@ sys_fork(int32_t *retval) {
 	if (kill) {
 		kfree(child_tf);
 		*retval = ENOMEM;
+		
 		return -1;
 	}
 

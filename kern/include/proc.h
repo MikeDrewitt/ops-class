@@ -48,6 +48,9 @@ struct addrspace;
 struct thread;
 struct vnode;
 
+#define PID_TOP 64
+#define FILE_TOP 64
+
 /*
  * Process structure.
  *
@@ -99,14 +102,17 @@ struct proc {
 
     bool running;
 
-    struct file_table *p_filetable[64];  /*     */
+    struct file_table *p_filetable[FILE_TOP];  /*     */
 	
     /* add more material here as needed */
     struct trapframe *p_tf;
 };
 
 
-struct proc *pid_table[64];
+struct proc *pid_table[PID_TOP];
+struct lock *pid_lock;          // Attempt to lock the PID table
+
+
 void *carl_k_buff[ARG_MAX/4];
 /* This is the process structure for the kernel and for kernel-only threads. */
 extern struct proc *kproc;
