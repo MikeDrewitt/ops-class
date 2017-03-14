@@ -437,7 +437,6 @@ enter_new_process(int argc, userptr_t argv, userptr_t env,
 
 	bzero(&tf, sizeof(tf));
 
-
 	tf.tf_status = CST_IRQMASK | CST_IEp | CST_KUp;
 	tf.tf_epc = entry;
 	tf.tf_a0 = argc;
@@ -445,5 +444,6 @@ enter_new_process(int argc, userptr_t argv, userptr_t env,
 	tf.tf_a2 = (vaddr_t)env;
 	tf.tf_sp = stack;
 
+	kprintf("hullo\n");
 	mips_usermode(&tf);
 }

@@ -18,9 +18,17 @@ sys_execv(int32_t *retval, const char *program, char **args)
 {
 
 
-	(void)retval;
+	//(void)retval;
 	
 	/* zeros out the buffer */
+	
+	if (program == NULL) {
+		*retval = EFAULT; 
+		return -1;
+	}
+
+
+
 	void *k_buff = carl_k_buff; 
 	bzero(k_buff, ARG_MAX);
 
@@ -173,6 +181,7 @@ sys_execv(int32_t *retval, const char *program, char **args)
 //			copyin((const_userptr_t)*safe_args, &pointer_char,1);
 					
 			copyin((const_userptr_t)*args,(void *)pointer_char, 1);
+
 //			kprintf("k_arguments = %s        address = %p \n",pointer_char, (void *)pointer_char);
 			
 			*args += 1;

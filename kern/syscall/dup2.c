@@ -21,7 +21,6 @@ sys_dup2(int32_t *retval, int oldfd, int newfd)
 		return 0;	
 	}
 
-
 	if (oldfd < 0 || newfd < 0 || oldfd > 64 || newfd > 64 || curproc->p_filetable[oldfd] == NULL) {
 		*retval = EBADF;
 		return -1;
