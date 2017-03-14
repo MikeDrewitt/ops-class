@@ -56,7 +56,6 @@ vfs_getcurdir(struct vnode **ret)
 		*ret = curproc->p_cwd;
 	}
 	else {
-		kprintf("&&\n");
 		rv = ENOENT;
 	}
 	spinlock_release(&curproc->p_lock);

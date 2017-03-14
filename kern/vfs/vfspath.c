@@ -70,7 +70,6 @@ vfs_open(char *path, int openflags, mode_t mode, struct vnode **ret)
 
 		result = vfs_lookparent(path, &dir, name, sizeof(name));
 		if (result) {
-			kprintf("yo0\n");
 			return result;
 		}
 
@@ -83,7 +82,6 @@ vfs_open(char *path, int openflags, mode_t mode, struct vnode **ret)
 	}
 
 	if (result) {
-		kprintf("yo\n");
 		return result;
 	}
 
@@ -92,7 +90,6 @@ vfs_open(char *path, int openflags, mode_t mode, struct vnode **ret)
 	result = VOP_EACHOPEN(vn, openflags);
 	if (result) {
 		VOP_DECREF(vn);
-		kprintf("yo2\n");
 		return result;
 	}
 
@@ -105,7 +102,6 @@ vfs_open(char *path, int openflags, mode_t mode, struct vnode **ret)
 		}
 		if (result) {
 			VOP_DECREF(vn);
-			kprintf("yo3\n");
 			return result;
 		}
 	}

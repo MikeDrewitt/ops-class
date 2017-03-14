@@ -148,6 +148,13 @@ sys_fork(int32_t *retval) {
 		child_proc->running = true;
 
 		// kprintf("\n");
+		kill = vfs_getcurdir(&child_proc->p_cwd);
+		if (kill) {
+			kprintf("vfs_getcwd failed (%s)\n", strerror(kill));
+			*retval = kill;
+			return -1;
+		}
+
 
 		pid_table[new_pid] = child_proc;
 	}
