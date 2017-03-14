@@ -21,8 +21,6 @@
 ssize_t
 sys_read(int32_t *retval, int fd, void *buf, size_t buflen)
 {
-
-
 	int result;
 
 	// EBADF fd is not a valid file descriptor, or was not opened for writing 
@@ -31,7 +29,22 @@ sys_read(int32_t *retval, int fd, void *buf, size_t buflen)
 		*retval = EBADF;
 		return -1;
 	}
-	
+
+	/*
+	void *safe_buf = NULL;
+	result = copyin((const_userptr_t)buf, &safe_buf, buflen);
+
+	if (result) {
+		*retval = EFAULT;
+		return -1;
+	}
+
+	if (safe_buf == NULL) {
+		*retval = EFAULT;
+		return -1;
+	}
+	*/
+
 	struct iovec iov;
 	struct uio u;
 

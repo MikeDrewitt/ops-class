@@ -35,6 +35,21 @@ sys_write(int fd, const void *buf, size_t nbytes, int32_t *retval)
 		return -1;
 	}
 
+	/*
+	void *safe_buf = NULL;
+	result = copyin((const_userptr_t)buf, &safe_buf, nbytes);
+
+	if (result) {
+		*retval = EFAULT;
+		return -1;
+	}
+
+	if (safe_buf == NULL) {
+		*retval = EFAULT;
+		return -1;
+	}
+	*/
+
 	struct iovec iov;
 	struct uio u;
 	
@@ -44,6 +59,11 @@ sys_write(int fd, const void *buf, size_t nbytes, int32_t *retval)
 	iov.iov_len = nbytes;
 	u.uio_iov = &iov;
 	u.uio_iovcnt = 1;
+	if (buf == NULL) {
+		*retval = EBADF; 
+		return -1;
+	}
+
 	u.uio_resid = nbytes;
 	u.uio_offset = curproc->p_filetable[fd]->offset;
 	u.uio_segflg = UIO_USERSPACE;

@@ -24,11 +24,6 @@ sys_lseek(int64_t *retval, int fd, off_t pos, int whence)
 		return -1;
 	}
 
-	if (pos < 0) {
-		*retval = EINVAL;
-		return -1;
-	}
-
 	int seekable = VOP_ISSEEKABLE(curproc->p_filetable[fd]->ft_vnode); 
 	if (!seekable) {
 		*retval = ESPIPE;
@@ -36,38 +31,67 @@ sys_lseek(int64_t *retval, int fd, off_t pos, int whence)
 	}
 
 	struct stat statbuf;
-	
+
+	lock_acquire(curproc->p_filetable[fd]->ft_lock);
+
 	VOP_STAT(curproc->p_filetable[fd]->ft_vnode, &statbuf);
 
-
-/*
-	kprintf("#----------------------#\n");
-	kprintf("fd: %d\n", fd);
-	kprintf("pos_lseek: %lld\n", pos);
-	kprintf("whence_lseek: %d\n", whence);
-	kprintf("offset_lseek: %d\n", curthread->t_proc->p_filetable[fd]->offset);
-	kprintf("file_size: %lld\n", statbuf.st_size);
-	kprintf("SEEK: %d\n", whence);
-	kprintf("#----------------------#\n");
-*/
-
 	if (whence == SEEK_SET) {
+		
+		if (pos < 0) {
+			*retval = EINVAL;
+
+			lock_release(curproc->p_filetable[fd]->ft_lock);
+			return 0;
+
+		}
+
 		curproc->p_filetable[fd]->offset = pos;
 		*retval = curthread->t_proc->p_filetable[fd]->offset;
+		
+		lock_release(curproc->p_filetable[fd]->ft_lock);
 		return 0;
 	}
 	else if (whence == SEEK_CUR) {
+	
+		int position = pos + curproc->p_filetable[fd]->offset;
+
+		// Seeking beyond the EOF
+			
+		if (position < 0) {
+			*retval = EINVAL;
+
+			lock_release(curproc->p_filetable[fd]->ft_lock);
+			return -1;			
+		}
+
 		curproc->p_filetable[fd]->offset += pos;
 		*retval = curproc->p_filetable[fd]->offset;
+		
+		lock_release(curproc->p_filetable[fd]->ft_lock);
 		return 0;
 	}
 	else if (whence == SEEK_END) {
-		curproc->p_filetable[fd]->offset = statbuf.st_size + pos;
+
+		int position = statbuf.st_size + pos;
+
+		if (position < 0) {
+			*retval = EINVAL;
+
+			lock_release(curproc->p_filetable[fd]->ft_lock);
+			return -1;			
+		}
+
+		curproc->p_filetable[fd]->offset = position;
 		*retval = curproc->p_filetable[fd]->offset;
+		
+		lock_release(curproc->p_filetable[fd]->ft_lock);
 		return 0; 
 
 	}
 	
 	*retval = EINVAL;
+	lock_release(curproc->p_filetable[fd]->ft_lock);
+
 	return -1;
 }
