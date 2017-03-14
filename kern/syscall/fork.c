@@ -155,7 +155,6 @@ sys_fork(int32_t *retval) {
 			return -1;
 		}
 
-
 		pid_table[new_pid] = child_proc;
 	}
 	else {
