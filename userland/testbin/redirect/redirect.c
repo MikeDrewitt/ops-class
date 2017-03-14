@@ -159,6 +159,7 @@ cat(void)
 		dodup2(rfd, STDIN_FILENO, INFILE);
 		dodup2(wfd, STDOUT_FILENO, OUTFILE);
 		doclose(rfd, INFILE);
+		kprintf("hullo\n");
 		doclose(wfd, OUTFILE);
 		printf("***\n");	
 		args[0] = "cat";
@@ -171,7 +172,7 @@ cat(void)
 	/* parent */
 	doclose(rfd, INFILE);
 	doclose(wfd, OUTFILE);
-
+	printf("done with parent close\n");
 	result = waitpid(pid, &status, 0);
 	if (result == -1) {
 		err(1, "waitpid");

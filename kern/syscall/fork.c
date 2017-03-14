@@ -124,7 +124,7 @@ sys_fork(int32_t *retval) {
 		if (curproc->p_filetable[i] != NULL) {
 
 			curproc->p_filetable[i]->ref_counter += 1;
-			// kprintf("ref: %d\n", curproc->p_filetable[i]->ref_counter);
+			kprintf("fork ref count: %d    fd: %d    \n", curproc->p_filetable[i]->ref_counter, i);
 		}
 		
 		// kprintf("iter: %d\n", i);
