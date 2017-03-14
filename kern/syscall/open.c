@@ -39,6 +39,8 @@ sys_open(int32_t *retval, const char *filename, int flags)
 
 	file = kmalloc(sizeof(*file));
 
+	kprintf("filename: %s flags: %d\n", filename, flags);
+
 	int result;
 	char name_copy[128];
 
@@ -70,15 +72,16 @@ sys_open(int32_t *retval, const char *filename, int flags)
 	file->offset = 0;
 	file->ref_counter = 1;
 
-	result = vfs_open(name_copy, flags, 0664, &v);		
+	result = vfs_open(name_copy, flags, 0, &v);		
 
 	if (result) {
+		kprintf("fuck\n");
 		*retval = EIO;
 		return -1;
 	}
 
-	int file_descriptor = 0; //position in the file table
-	while (curthread->t_proc->p_filetable[file_descriptor] != NULL && file_descriptor < 65) {	
+	int file_descriptor = 3; //position in the file table
+	while (curproc->p_filetable[file_descriptor] != NULL && file_descriptor < 65) {	
 		file_descriptor++;
 	}//run out of space? 
 	

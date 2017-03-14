@@ -166,6 +166,7 @@ getdevice(char *path, char **subpath, struct vnode **startvn)
 		 * use the whole thing as the subpath.
 		 */
 		*subpath = path;
+		kprintf("dogs\n");
 		return vfs_getcurdir(startvn);
 	}
 
@@ -180,6 +181,7 @@ getdevice(char *path, char **subpath, struct vnode **startvn)
 
 		result = vfs_getroot(path, startvn);
 		if (result) {
+			kprintf("cats\n");
 			return result;
 		}
 
@@ -251,6 +253,7 @@ vfs_lookparent(char *path, struct vnode **retval,
 	result = getdevice(path, &path, &startvn);
 	if (result) {
 		vfs_biglock_release();
+		kprintf("bitchen0\n");
 		return result;
 	}
 

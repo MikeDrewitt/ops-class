@@ -35,8 +35,8 @@ sys_dup2(int32_t *retval, int oldfd, int newfd)
 
 	lock_acquire(curproc->p_filetable[oldfd]->ft_lock);
 
-	curproc->p_filetable[oldfd]->ref_counter += 1;
 	curproc->p_filetable[newfd] = curproc->p_filetable[oldfd];
+	curproc->p_filetable[oldfd]->ref_counter += 1;
 
 	lock_release(curproc->p_filetable[oldfd]->ft_lock);
 
