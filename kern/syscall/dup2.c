@@ -15,7 +15,7 @@ int
 sys_dup2(int32_t *retval, int oldfd, int newfd)
 {
 	int err;
-	
+/*	
 	if (oldfd == newfd) {
 		*retval = newfd;
 		return 0;	
@@ -25,7 +25,7 @@ sys_dup2(int32_t *retval, int oldfd, int newfd)
 		*retval = EBADF;
 		return -1;
 	}
-
+*/
 	if (curproc->p_filetable[newfd] != NULL) {
 		err = sys_close(retval, newfd);
 		if (err) {
@@ -36,7 +36,7 @@ sys_dup2(int32_t *retval, int oldfd, int newfd)
 	lock_acquire(curproc->p_filetable[oldfd]->ft_lock);
 
 	curproc->p_filetable[oldfd]->ref_counter += 1;
-	curproc->p_filetable[newfd] = curproc->p_filetable[newfd];
+	curproc->p_filetable[newfd] = curproc->p_filetable[oldfd];
 
 	lock_release(curproc->p_filetable[oldfd]->ft_lock);
 

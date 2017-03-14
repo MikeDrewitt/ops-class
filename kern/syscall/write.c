@@ -35,9 +35,11 @@ sys_write(int fd, const void *buf, size_t nbytes, int32_t *retval)
 		return -1;
 	}
 
-	/*
-	void *safe_buf = NULL;
-	result = copyin((const_userptr_t)buf, &safe_buf, nbytes);
+	
+	void *safe_buf[nbytes + 4];
+	result = copyin((const_userptr_t)buf, (void *)safe_buf, 4);
+
+	// kprintf("buf: %s\n", (char *)buf);
 
 	if (result) {
 		*retval = EFAULT;
@@ -48,8 +50,7 @@ sys_write(int fd, const void *buf, size_t nbytes, int32_t *retval)
 		*retval = EFAULT;
 		return -1;
 	}
-	*/
-
+	
 	struct iovec iov;
 	struct uio u;
 	

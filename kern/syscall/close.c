@@ -37,25 +37,30 @@ sys_close(int32_t *retval, int fd)
 		return -1;
 	}
 
+	lock_acquire(curproc->p_filetable[fd]->ft_lock);
+	
 	curproc->p_filetable[fd]->ref_counter--;
 	if (curproc->p_filetable[fd]->ref_counter > 0) {
 		*retval = 0;
+		
+		lock_release(curproc->p_filetable[fd]->ft_lock);
 		return 0;
 	}
-
-	lock_destroy(curthread->t_proc->p_filetable[fd]->ft_lock);
 
 	curthread->t_proc->p_filetable[fd]->flag = 0;
 	curthread->t_proc->p_filetable[fd]->offset = 0;
 
 	vfs_close(curproc->p_filetable[fd]->ft_vnode);
 
-	kfree(curthread->t_proc->p_filetable[fd]);
-	curthread->t_proc->p_filetable[fd] = NULL;
 
 	// kprintf("fd: %d, has been closed\n",  fd);
-	// lock_release(curproc->p_filetable[oldfd]->ft_lock);
+	lock_release(curproc->p_filetable[fd]->ft_lock);
+	
+	lock_destroy(curthread->t_proc->p_filetable[fd]->ft_lock);
 
+	curthread->t_proc->p_filetable[fd] = NULL;
+	kfree(curthread->t_proc->p_filetable[fd]);
+	
 	*retval = 0;
 	
 	// lock_release(curproc->p_full_lock);
