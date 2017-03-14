@@ -62,6 +62,7 @@ sys_write(int fd, const void *buf, size_t nbytes, int32_t *retval)
 	u.uio_iovcnt = 1;
 	if (buf == NULL) {
 		*retval = EBADF; 
+		lock_release(curproc->p_filetable[fd]->ft_lock);
 		return -1;
 	}
 

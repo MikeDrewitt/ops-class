@@ -158,6 +158,7 @@ cat(void)
 		/* child */
 		dodup2(rfd, STDIN_FILENO, INFILE);
 		dodup2(wfd, STDOUT_FILENO, OUTFILE);
+		
 		doclose(rfd, INFILE);
 		printf("hullo\n");
 		doclose(wfd, OUTFILE);

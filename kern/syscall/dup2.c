@@ -15,7 +15,7 @@ int
 sys_dup2(int32_t *retval, int oldfd, int newfd)
 {
 
-	(void)oldfd;
+//	(void)oldfd;
 
 	
 	// If The newfd is already open
