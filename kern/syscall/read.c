@@ -12,6 +12,7 @@
 #include <elf.h>
 #include <copyinout.h>
 
+#include <kern/fcntl.h>
 #include <kern/errno.h>
 #include <kern/unistd.h>
 
@@ -29,11 +30,19 @@ sys_read(int32_t *retval, int fd, void *buf, size_t buflen)
 		*retval = EBADF;
 		return -1;
 	}
+	//kprintf("flag = %d \n", curproc->p_filetable[fd]->flag);
+	if((1 & curproc->p_filetable[fd]->flag) == 1){
 
-	KASSERT(buf != NULL);
+		*retval = EBADF;
+		return -1;
 
-	/*
-	void *safe_buf = NULL;
+	}
+
+//	KASSERT(buf != NULL);
+
+	void *const_buf = buf;
+	
+	void *safe_buf = kmalloc(buflen);
 	result = copyin((const_userptr_t)buf, &safe_buf, buflen);
 
 	if (result) {
@@ -45,14 +54,14 @@ sys_read(int32_t *retval, int fd, void *buf, size_t buflen)
 		*retval = EFAULT;
 		return -1;
 	}
-	*/
+	
 
 	struct iovec iov;
 	struct uio u;
 
 	lock_acquire(curproc->p_filetable[fd]->ft_lock);
 
-	iov.iov_ubase = (userptr_t)buf;
+	iov.iov_ubase = (userptr_t)const_buf;
 	iov.iov_len = buflen;
 	u.uio_iov = &iov;
 	u.uio_iovcnt = 1;
