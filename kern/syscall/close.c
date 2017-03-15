@@ -53,17 +53,18 @@ sys_close(int32_t *retval, int fd)
 
 	vfs_close(curproc->p_filetable[fd]->ft_vnode);
 
+	struct file_table *temp = curproc->p_filetable[fd];
+	curthread->t_proc->p_filetable[fd] = NULL;
+
+	//kfree(temp);
+
+	*retval = 0;
 
 	// kprintf("fd: %d, has been closed\n",  fd);
-	lock_release(curproc->p_filetable[fd]->ft_lock);
-	
-	lock_destroy(curthread->t_proc->p_filetable[fd]->ft_lock);
+	lock_release(temp->ft_lock);
+	lock_destroy(temp->ft_lock);
+	temp = NULL;
 
-	curthread->t_proc->p_filetable[fd] = NULL;
-	kfree(curthread->t_proc->p_filetable[fd]);
-	
-	*retval = 0;
-	
 	// lock_release(curproc->p_full_lock);
 	
 	return 0;

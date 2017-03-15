@@ -30,6 +30,8 @@ sys_read(int32_t *retval, int fd, void *buf, size_t buflen)
 		return -1;
 	}
 
+	KASSERT(buf != NULL);
+
 	/*
 	void *safe_buf = NULL;
 	result = copyin((const_userptr_t)buf, &safe_buf, buflen);

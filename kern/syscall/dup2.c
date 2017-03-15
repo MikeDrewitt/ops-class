@@ -31,7 +31,7 @@ sys_dup2(int32_t *retval, int oldfd, int newfd)
 	
 	curproc->p_filetable[newfd] = curproc->p_filetable[oldfd];
 	
-	lock_release(curproc->p_filetable[oldfd]->ft_lock);
+	 lock_release(curproc->p_filetable[oldfd]->ft_lock);
 	
 	*retval = newfd;
 	// kprintf("finishing dup2\n");
