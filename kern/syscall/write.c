@@ -40,9 +40,13 @@ sys_write(int fd, const void *buf, size_t nbytes, int32_t *retval)
 		return -1;
 	}
 
-/*	void *const_buf = (void *)buf;	
-	void *safe_buf = kmalloc(nbytes);
+	void *const_buf = (void *)buf;	
+	
+	void *safe_buf[nbytes];
 	result = copyin((const_userptr_t)buf, safe_buf, nbytes);
+
+	// (void)result;
+	// void)safe_buf;
 
 	// kprintf("buf: %s\n", (char *)buf);
 
@@ -55,13 +59,13 @@ sys_write(int fd, const void *buf, size_t nbytes, int32_t *retval)
 		*retval = EFAULT;
 		return -1;
 	}
-*/	
+
 	struct iovec iov;
 	struct uio u;
 	
 	lock_acquire(curproc->p_filetable[fd]->ft_lock);
 
-	iov.iov_ubase = (userptr_t)buf;
+	iov.iov_ubase = (userptr_t)const_buf;
 	iov.iov_len = nbytes;
 	u.uio_iov = &iov;
 	u.uio_iovcnt = 1;
