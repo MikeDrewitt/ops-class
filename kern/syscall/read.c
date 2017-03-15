@@ -43,7 +43,7 @@ sys_read(int32_t *retval, int fd, void *buf, size_t buflen)
 	void *const_buf = buf;
 	
 	void *safe_buf = kmalloc(buflen);
-	result = copyin((const_userptr_t)buf, &safe_buf, buflen);
+	result = copyin((const_userptr_t)buf, safe_buf, buflen);
 
 	if (result) {
 		*retval = EFAULT;
