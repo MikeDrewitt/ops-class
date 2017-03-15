@@ -81,11 +81,12 @@ sys_read(int32_t *retval, int fd, void *buf, size_t buflen)
 	}
 // u.uio_resid is updated based on how many bites are written during 
 // VOP_write
-	*retval = buflen; //- u.uio_resid;
-	curproc->p_filetable[fd]->offset += buflen - u.uio_resid;
-
+	*retval = buflen - u.uio_resid;
+	curproc->p_filetable[fd]->offset =u.uio_offset;
+	
+	//kprintf("buflen = %d\n",(int)buflen);	
 	lock_release(curproc->p_filetable[fd]->ft_lock);
-
+	
 	return 0;
 
 }

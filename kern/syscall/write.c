@@ -77,15 +77,16 @@ sys_write(int fd, const void *buf, size_t nbytes, int32_t *retval)
 
 	result = VOP_WRITE(curproc->p_filetable[fd]->ft_vnode, &u);
 
-	*retval = nbytes; // - u.uio_resid;
-	curproc->p_filetable[fd]->offset += nbytes - u.uio_resid;
-	
-	lock_release(curproc->p_filetable[fd]->ft_lock);
-
 	if(result){
 		*retval = EIO;
+		lock_release(curproc->p_filetable[fd]->ft_lock);
 		return -1;
 	}
+
+	curproc->p_filetable[fd]->offset = u.uio_offset;
+	*retval = nbytes - u.uio_resid;
+
+	lock_release(curproc->p_filetable[fd]->ft_lock);
 // u.uio_resid is updated based on how many bites are written during 
 // VOP_write
 

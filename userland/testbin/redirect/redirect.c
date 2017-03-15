@@ -71,7 +71,7 @@ dodup2(int ofd, int nfd, const char *file)
 	int r;
 
 	r = dup2(ofd, nfd);
-	printf("-->\n");
+//	printf("-->\n");
 
 	if (r < 0) {
 		err(1, "%s: dup2", file);
@@ -98,7 +98,6 @@ mkfile(void)
 	ssize_t r;
 
 	fd = doopen(INFILE, O_WRONLY|O_CREAT|O_TRUNC);
-
 	r = write(fd, slogan, strlen(slogan));
 	if (r < 0) {
 		err(1, "%s: write", INFILE);
@@ -120,7 +119,6 @@ chkfile(void)
 	int fd;
 
 	fd = doopen(OUTFILE, O_RDONLY);
-
 	r = read(fd, buf, sizeof(buf));
 	if (r < 0) {
 		err(1, "%s: read", OUTFILE);
@@ -155,14 +153,14 @@ cat(void)
 	}
 
 	if (pid == 0) {
+		
 		/* child */
 		dodup2(rfd, STDIN_FILENO, INFILE);
 		dodup2(wfd, STDOUT_FILENO, OUTFILE);
 		
 		doclose(rfd, INFILE);
-		printf("hullo\n");
 		doclose(wfd, OUTFILE);
-		printf("***\n");	
+	//	printf("***\n");	
 		args[0] = "cat";
 		args[1] = NULL;
 		execv(PATH_CAT, (char **)args);

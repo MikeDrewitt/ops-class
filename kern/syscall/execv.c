@@ -22,11 +22,11 @@ sys_execv(int32_t *retval, const char *program, char **args)
 	
 	/* zeros out the buffer */
 	
-	if (program == NULL) {
+/*	if (program == NULL) {
 		*retval = EFAULT; 
 		return -1;
 	}
-
+*/
 
 
 	void *k_buff = carl_k_buff; 
@@ -545,7 +545,6 @@ sys_execv(int32_t *retval, const char *program, char **args)
 	
 	// kprintf("bottom_of_stack = %p\n", (void *)bottom_of_stack);
 	// kprintf("entrypoint = %p\n\n", (void *)entrypoint);
-	
 	
 	
 	enter_new_process(num_args,			/* argc  */ 
