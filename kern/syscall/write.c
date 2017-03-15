@@ -35,7 +35,12 @@ sys_write(int fd, const void *buf, size_t nbytes, int32_t *retval)
 		return -1;
 	}
 
-/*	
+	if(curproc->p_filetable[fd]->flag == 4){
+		*retval = EBADF;
+		return -1;
+	}
+
+/*	void *const_buf = (void *)buf;	
 	void *safe_buf = kmalloc(nbytes);
 	result = copyin((const_userptr_t)buf, safe_buf, nbytes);
 
@@ -60,12 +65,6 @@ sys_write(int fd, const void *buf, size_t nbytes, int32_t *retval)
 	iov.iov_len = nbytes;
 	u.uio_iov = &iov;
 	u.uio_iovcnt = 1;
-	if (buf == NULL) {
-		*retval = EBADF; 
-		lock_release(curproc->p_filetable[fd]->ft_lock);
-		return -1;
-	}
-
 	u.uio_resid = nbytes;
 	u.uio_offset = curproc->p_filetable[fd]->offset;
 	u.uio_segflg = UIO_USERSPACE;

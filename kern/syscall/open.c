@@ -39,7 +39,7 @@ sys_open(int32_t *retval, const char *filename, int flags)
 
 	file = kmalloc(sizeof(*file));
 
-	// kprintf("filename: %s flags: %d\n", filename, flags);
+	kprintf("filename: %s flags: %d\n", filename, flags);
 
 	int result;
 	char name_copy[128];
