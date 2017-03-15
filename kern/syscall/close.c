@@ -12,7 +12,7 @@
 
 /*
  * uses vfs open to open the file,
- * gets all of the information from the vnode that is passed in there
+ *gets all of the information from the vnode that is passed in there
  *
  * supposed to return the index in the array for the file descriptor
  *
@@ -38,16 +38,16 @@ sys_close(int32_t *retval, int fd)
 	}
 
 	lock_acquire(curproc->p_filetable[fd]->ft_lock);
-	kprintf("close before ref counter = %d    fd: %d     \n", curproc->p_filetable[fd]->ref_counter, fd);
+//	kprintf("close before ref counter = %d    fd: %d     \n", curproc->p_filetable[fd]->ref_counter, fd);
 	curproc->p_filetable[fd]->ref_counter--;
-	kprintf("close after ref counter = %d     fd: %d    \n", curproc->p_filetable[fd]->ref_counter, fd);
+//	kprintf("close after ref counter = %d     fd: %d    \n", curproc->p_filetable[fd]->ref_counter, fd);
 	if (curproc->p_filetable[fd]->ref_counter > 0) {
 		*retval = 0;
-		kprintf("not destroying file \n");	
+//		kprintf("not destroying file \n");	
 		lock_release(curproc->p_filetable[fd]->ft_lock);
 		return 0;
 	}
-	kprintf("destroying file   fd: %d \n", fd);
+//	kprintf("destroying file   fd: %d \n", fd);
 	curthread->t_proc->p_filetable[fd]->flag = 0;
 	curthread->t_proc->p_filetable[fd]->offset = 0;
 

@@ -91,6 +91,6 @@ sys_open(int32_t *retval, const char *filename, int flags)
 	curthread->t_proc->p_filetable[file_descriptor] = file;
 
 	*retval = file_descriptor;
-	kprintf("opening file %s     fd:%d    \n",filename, file_descriptor);
+//	kprintf("opening file %s     fd:%d    \n",filename, file_descriptor);
 	return 0;
 }

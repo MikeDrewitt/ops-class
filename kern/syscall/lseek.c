@@ -42,7 +42,7 @@ sys_lseek(int64_t *retval, int fd, off_t pos, int whence)
 			*retval = EINVAL;
 
 			lock_release(curproc->p_filetable[fd]->ft_lock);
-			return 0;
+			return -1;
 
 		}
 
