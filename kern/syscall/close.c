@@ -56,7 +56,6 @@ sys_close(int32_t *retval, int fd)
 	struct file_table *temp = curproc->p_filetable[fd];
 	curthread->t_proc->p_filetable[fd] = NULL;
 
-	//kfree(temp);
 
 	*retval = 0;
 
@@ -65,6 +64,7 @@ sys_close(int32_t *retval, int fd)
 	lock_destroy(temp->ft_lock);
 	temp = NULL;
 
+	kfree(temp);
 	// lock_release(curproc->p_full_lock);
 	
 	return 0;
