@@ -122,13 +122,21 @@ sys_fork(int32_t *retval) {
 	int i = 0;
 	while (i < PID_TOP) {
 		if (curproc->p_filetable[i] != NULL) {
-
+			lock_acquire(curproc->p_filetable[i]->ft_lock);
 			curproc->p_filetable[i]->ref_counter += 1;
+			child_proc->p_filetable[i] = curproc->p_filetable[i];
+			lock_release(curproc->p_filetable[i]->ft_lock);
 			// kprintf("fork ref count: %d    fd: %d    \n", curproc->p_filetable[i]->ref_counter, i);
+		}
+		else{
+
+			child_proc->p_filetable[i] = curproc->p_filetable[i];
+
+
+
 		}
 		
 		// kprintf("iter: %d\n", i);
-		child_proc->p_filetable[i] = curproc->p_filetable[i];
 
 		// kprintf("child: %p\n", child_proc->p_filetable[i]);
 		// kprintf("parent: %p\n", curproc->p_filetable[i]);

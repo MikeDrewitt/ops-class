@@ -89,12 +89,12 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 		return -1;
 	}
 
-	if (options == WNOHANG) {
+/*	if (options == WNOHANG) {
 		if (pid_table[pid]->p_sem->sem_count == 0) {
 			return 0;
 		}
 	}
-
+*/
 	lock_acquire(curproc->p_full_lock);
 	
 	void *safe_status = NULL;

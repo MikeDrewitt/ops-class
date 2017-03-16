@@ -199,7 +199,7 @@ proc_destroy(struct proc *proc)
 	// kfree(proc->p_tf);
 
 	int i;
-	for (i = 0; i < FILE_TOP; i++) {
+	for (i = 3; i < FILE_TOP; i++) {
 		if (proc->p_filetable[i] != NULL) {
 			proc->p_filetable[i]->ref_counter -= 1;
 			

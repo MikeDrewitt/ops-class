@@ -32,15 +32,16 @@ sys_dup2(int32_t *retval, int oldfd, int newfd)
 
 
 
-	// If The newfd is already open
 	lock_acquire(curproc->p_filetable[oldfd]->ft_lock);
+	// If The newfd is already open
+//	kprintf("file %d has acquired a lock in dup2\n",oldfd);
 	if (curproc->p_filetable[newfd] != NULL) {
-		// kprintf("dup2 calling close \n");
+//		 kprintf("dup2 calling close in\n");
 		err = sys_close(retval, newfd);
 		if(err){
 			
-			*retval = err;
 			lock_release(curproc->p_filetable[oldfd]->ft_lock);
+			*retval = err;
 			return -1;
 	
 		}
@@ -54,6 +55,7 @@ sys_dup2(int32_t *retval, int oldfd, int newfd)
 	
 	 lock_release(curproc->p_filetable[oldfd]->ft_lock);
 	
+//	kprintf("file %d has released a lock in dup2\n",oldfd);
 	*retval = newfd;
 	// kprintf("finishing dup2\n");
 	return 0;
