@@ -32,6 +32,7 @@
 
 
 #include <cdefs.h> /* for __DEAD */
+#include <vnode.h>
 struct trapframe; /* from <machine/trapframe.h> */
 
 /*
@@ -65,6 +66,7 @@ int sys_close(int32_t *retval, int fd);
 int sys___time(userptr_t user_seconds, userptr_t user_nanoseconds);
 int sys_execv(int32_t *retval, const char *program, char **args);
 int sys_dup2(int32_t *retval, int oldfd, int newfd);
+int sys_fstat(int32_t *retval, int fd, struct stat *statbuf);
 
 void sys__exit(int32_t *retval, int errorcode);
 

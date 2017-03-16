@@ -398,6 +398,7 @@ file      syscall/waitpid.c
 file      syscall/getpid.c
 file      syscall/execv.c
 file      syscall/dup2.c
+file      syscall/fstat.c
 
 #
 # Startup and initialization

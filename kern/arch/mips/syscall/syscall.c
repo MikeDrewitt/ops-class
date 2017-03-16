@@ -35,6 +35,7 @@
 #include <copyinout.h>
 #include <addrspace.h>
 #include <proc.h>
+#include <vnode.h>
 
 #include <kern/errno.h>
 #include <kern/syscall.h>
@@ -174,12 +175,18 @@ syscall(struct trapframe *tf)
 	
 		case SYS_dup2:
 			err = sys_dup2(&retval, (int)tf->tf_a0, (int)tf->tf_a1);
-		break;	
+		break;
+		
+		case SYS_fstat:
+			err = sys_fstat(&retval, (int)tf->tf_a0, (void *)tf->tf_a1);
+		break;
+	
 		/* Add stuff here */
 
 	    default:
 		kprintf("Unknown syscall %d\n", callno);
 		err = ENOSYS;
+		retval = err;
 		break;
 	}
 
