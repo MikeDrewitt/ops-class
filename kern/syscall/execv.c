@@ -80,17 +80,12 @@ sys_execv(int32_t *retval, const char *program, char **args)
 		return -1;
 	}
 
-	err = copyin((const_userptr_t)*args,(void *)pointer_char, 1);
+/*	err = copyin((const_userptr_t)*args,(void *)pointer_char, 1);
 	if (err) {
 		*retval = EFAULT;
 		return -1;
 	}
-
-	err = copyin((const_userptr_t)*args,(void *)pointer_char, 1);
-	if (err) {
-		*retval = EFAULT;
-		return -1;
-	}
+*/
 	
 	char kernel_progname[128];
 	err = copyinstr((const_userptr_t)program, kernel_progname, 128, 0);

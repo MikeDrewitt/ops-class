@@ -84,7 +84,7 @@ sys_open(int32_t *retval, const char *filename, int flags)
 		file_descriptor++;
 	}//run out of space? 
 	
-	kprintf("file: %s fd: %d, has been opened\n",filename ,file_descriptor);
+//	kprintf("file: %s fd: %d, has been opened\n",filename ,file_descriptor);
 	file->ft_vnode = v;
 	curthread->t_proc->p_filetable[file_descriptor] = file;
 
