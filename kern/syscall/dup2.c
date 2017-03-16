@@ -23,15 +23,11 @@ sys_dup2(int32_t *retval, int oldfd, int newfd)
 		return -1;
 	}
 
-
 	if(oldfd == newfd){
 		*retval = oldfd;
 		return 0;
 	}
 	
-
-
-
 	// If The newfd is already open
 	lock_acquire(curproc->p_filetable[oldfd]->ft_lock);
 	if (curproc->p_filetable[newfd] != NULL) {
