@@ -120,7 +120,7 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 			
 			proc_destroy(GLOBAL_TABLE->pid_table[pid_index]);
 
-			// lock_release(curproc->p_full_lock);
+			// lock_release(GLOBAL_TABLE->pid_lock);
 
 			*retval = pid;
 			return 0;
@@ -142,7 +142,7 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 	proc_destroy(GLOBAL_TABLE->pid_table[pid_index]);
 	GLOBAL_TABLE->pid_table[pid_index] = NULL;
 
-//	lock_release(GLOBAL_TABLE->pid_lock);
+	// lock_release(GLOBAL_TABLE->pid_lock);
 
 	/*
 	 * when done waiting return the exit status from _exit() in *status
