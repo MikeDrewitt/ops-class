@@ -19,20 +19,11 @@ sys_execv(int32_t *retval, const char *program, char **args)
 
 
 	//(void)retval;
-	
-	/* zeros out the buffer */
-	
-/*	if (program == NULL) {
-		*retval = EFAULT; 
-		return -1;
-	}
-*/
 
+	int err;
 
 	void *k_buff = carl_k_buff; 
 	bzero(k_buff, ARG_MAX);
-
-
 
 	/*
 	 * pointer_void - pointer to the kernel buffer that will be used to assign 
@@ -47,11 +38,11 @@ sys_execv(int32_t *retval, const char *program, char **args)
 	 * safe_args - safe version of the args variable being passed in
 	 *
 	 */
+
 	void *pointer_void = k_buff;
 	void *top_buff = k_buff;
 	char *pointer_char = (char *)k_buff;
 //	char **safe_args = k_buff;
-
 
 	/*
 	 * num_args - number of arguments being passed in.
@@ -79,7 +70,35 @@ sys_execv(int32_t *retval, const char *program, char **args)
 	int is_first = 0;		// flag to know if it is the first char in argument
 	int cur_arg = 0;
 
+	if (program == NULL) {
+		*retval = EFAULT;
+		return -1;
+	}
+
+	if (args == NULL) {
+		*retval = EFAULT;
+		return -1;
+	}
+
+	err = copyin((const_userptr_t)*args,(void *)pointer_char, 1);
+	if (err) {
+		*retval = EFAULT;
+		return -1;
+	}
+
+	err = copyin((const_userptr_t)*args,(void *)pointer_char, 1);
+	if (err) {
+		*retval = EFAULT;
+		return -1;
+	}
 	
+	char kernel_progname[128];
+	err = copyinstr((const_userptr_t)program, kernel_progname, 128, 0);
+	if (err) {
+		*retval = EFAULT;
+		return -1;
+	}
+
 	//LETS JENK THE SHIT OUT OF THIS
 
 
@@ -112,9 +131,6 @@ sys_execv(int32_t *retval, const char *program, char **args)
 		buff_offset++;
 		args++;
 		num_args++;
-
-
-
 	}
 
 //	kprintf("this should be 3 = %d\n",num_args);
@@ -181,6 +197,10 @@ sys_execv(int32_t *retval, const char *program, char **args)
 //			copyin((const_userptr_t)*safe_args, &pointer_char,1);
 					
 			copyin((const_userptr_t)*args,(void *)pointer_char, 1);
+			if (err) {
+				*retval = EFAULT;
+				return -1;
+			}
 
 //			kprintf("k_arguments = %s        address = %p \n",pointer_char, (void *)pointer_char);
 			
@@ -317,7 +337,7 @@ sys_execv(int32_t *retval, const char *program, char **args)
 	int result;
 
 	/* Open the file. */
-	char kernel_progname[128];
+	// char kernel_progname[128];
 	copyinstr((const_userptr_t)program, kernel_progname, 128, 0);
 	
 	result = vfs_open(kernel_progname, O_RDONLY, 0, &v);

@@ -23,7 +23,6 @@ sys_dup2(int32_t *retval, int oldfd, int newfd)
 		return -1;
 	}
 
-
 	if(oldfd == newfd){
 		*retval = oldfd;
 		return 0;
