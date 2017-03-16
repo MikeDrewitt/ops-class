@@ -158,7 +158,7 @@ sys_fork(int32_t *retval) {
 
 		GLOBAL_TABLE->global_pid += 1;
 		
-		// kprintf("global_pid: %d\n", global_pid);
+		// kprintf("global_pid: %d\n", GLOBAL_TABLE->global_pid);
 
 		kill = vfs_getcurdir(&child_proc->p_cwd);
 		if (kill) {

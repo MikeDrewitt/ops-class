@@ -108,7 +108,6 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 	}
 
 
-	// lock_acquire(GLOBAL_TABLE->pid_lock);
 	
 	void *safe_status = NULL;
 	int result = copyin((const_userptr_t)status, &safe_status, 4);
@@ -117,10 +116,11 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 		
 		if (status == NULL) {
 			P(GLOBAL_TABLE->pid_table[pid_index]->p_sem);
+			lock_acquire(GLOBAL_TABLE->pid_lock);
 			
 			proc_destroy(GLOBAL_TABLE->pid_table[pid_index]);
 
-			// lock_release(GLOBAL_TABLE->pid_lock);
+			lock_release(GLOBAL_TABLE->pid_lock);
 
 			*retval = pid;
 			return 0;
@@ -134,6 +134,7 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 
 	// Wait here until _exit() is called by pid
 	P(GLOBAL_TABLE->pid_table[pid_index]->p_sem);
+	lock_acquire(GLOBAL_TABLE->pid_lock);
 
 	if (safe_status != NULL) {
 		*status = GLOBAL_TABLE->pid_table[pid_index]->exitcode;
@@ -142,7 +143,7 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 	proc_destroy(GLOBAL_TABLE->pid_table[pid_index]);
 	GLOBAL_TABLE->pid_table[pid_index] = NULL;
 
-	// lock_release(GLOBAL_TABLE->pid_lock);
+	lock_release(GLOBAL_TABLE->pid_lock);
 
 	/*
 	 * when done waiting return the exit status from _exit() in *status
