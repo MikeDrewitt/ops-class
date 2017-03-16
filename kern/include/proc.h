@@ -51,6 +51,7 @@ struct vnode;
 #define PID_TOP 64
 #define FILE_TOP 64
 
+
 /*
  * Process structure.
  *
@@ -96,6 +97,7 @@ struct proc {
 	struct vnode *p_cwd;		/* current working directory */
 
     int pid;
+    // int index;
     int parent_pid;
 
     int exitcode; 
@@ -108,9 +110,15 @@ struct proc {
     struct trapframe *p_tf;
 };
 
+struct global_pid_table {
+    
+    int global_pid;
 
-struct proc *pid_table[PID_TOP];
-struct lock *pid_lock;          // Attempt to lock the PID table
+    struct lock *pid_lock;
+    struct proc *pid_table[PID_TOP];
+};
+
+struct global_pid_table *GLOBAL_TABLE;
 
 
 void *carl_k_buff[ARG_MAX/4];

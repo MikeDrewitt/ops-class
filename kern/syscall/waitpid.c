@@ -63,8 +63,8 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 	// kprintf("WAITING ON  => Parent pid: %d\n", pid_table[pid]->parent_pid);
 	// kprintf("WAITING ON  => running: %d\n", pid_table[pid]->running);
 	// kprintf("WAITING ON  => exitcode: %d\n", pid_table[pid]->exitcode);
-		
-	if (pid < 0 || pid > 66 || pid_table[pid] == NULL) {
+	
+	if (pid < 0 || pid > PID_TOP) {
 		*retval = ESRCH;
 		return -1;
 	}
@@ -84,18 +84,31 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 		return -1;
 	}
 
-	if (curproc->pid != pid_table[pid]->parent_pid) {
+	int pid_index;	
+	for (pid_index = 1; pid_index < PID_TOP; pid_index++) {		
+		if (GLOBAL_TABLE->pid_table[pid_index] != NULL && GLOBAL_TABLE->pid_table[pid_index]->pid == pid) {
+			break;
+		}	
+	}
+
+	if (GLOBAL_TABLE->pid_table[pid_index] == NULL) {
+		*retval = ESRCH;
+		return -1;
+	}
+
+	if (curproc->pid != GLOBAL_TABLE->pid_table[pid_index]->parent_pid) {
 		*retval = ECHILD;
 		return -1;
 	}
 
 	if (options == WNOHANG) {
-		if (pid_table[pid]->p_sem->sem_count == 0) {
+		if (GLOBAL_TABLE->pid_table[pid_index]->p_sem->sem_count == 0) {
 			return 0;
 		}
 	}
 
-	lock_acquire(curproc->p_full_lock);
+
+	// lock_acquire(GLOBAL_TABLE->pid_lock);
 	
 	void *safe_status = NULL;
 	int result = copyin((const_userptr_t)status, &safe_status, 4);
@@ -103,33 +116,33 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 	if (result) {
 		
 		if (status == NULL) {
-			P(pid_table[pid]->p_sem);
+			P(GLOBAL_TABLE->pid_table[pid_index]->p_sem);
 			
-			proc_destroy(pid_table[pid]);
+			proc_destroy(GLOBAL_TABLE->pid_table[pid_index]);
 
-			lock_release(curproc->p_full_lock);
+			// lock_release(curproc->p_full_lock);
 
 			*retval = pid;
 			return 0;
 		}
 		
 		
-		lock_release(curproc->p_full_lock);
+		// lock_release(GLOBAL_TABLE->pid_lock);
 		*retval = EFAULT;
 		return -1;
 	}
 
 	// Wait here until _exit() is called by pid
-	P(pid_table[pid]->p_sem);
+	P(GLOBAL_TABLE->pid_table[pid_index]->p_sem);
 
 	if (safe_status != NULL) {
-		*status = pid_table[pid]->exitcode;
+		*status = GLOBAL_TABLE->pid_table[pid_index]->exitcode;
 	}
 
-	proc_destroy(pid_table[pid]);
-	pid_table[pid] = NULL;
+	proc_destroy(GLOBAL_TABLE->pid_table[pid_index]);
+	GLOBAL_TABLE->pid_table[pid_index] = NULL;
 
-	lock_release(curproc->p_full_lock);
+//	lock_release(GLOBAL_TABLE->pid_lock);
 
 	/*
 	 * when done waiting return the exit status from _exit() in *status

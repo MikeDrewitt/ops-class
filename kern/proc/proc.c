@@ -61,7 +61,7 @@
 process for the kernel; this holds all the kernel-only threads.
  */
 struct proc *kproc;
-
+struct global_pid_table *GLOBAL_TABLE;
 
 /*
  * Create a proc structure.
@@ -221,6 +221,20 @@ proc_destroy(struct proc *proc)
 	kfree(proc);
 }
 
+static
+struct global_pid_table*
+pid_table_create(void)
+{
+	struct global_pid_table *GLOBAL_TABLE;
+	GLOBAL_TABLE = kmalloc(sizeof(struct global_pid_table));
+	
+	GLOBAL_TABLE->pid_lock = lock_create("pid_table_lock");
+	
+	GLOBAL_TABLE->global_pid = 3;
+
+	return GLOBAL_TABLE;
+}
+
 /*
  * Create the process structure for the kernel.
  */
@@ -228,11 +242,13 @@ void
 proc_bootstrap(void)
 {
 	kproc = proc_create("[kernel]");
+	GLOBAL_TABLE = pid_table_create();
 
 	kproc->pid = 1;
+	// kproc->index = 1;
 	kproc->running = true;
 
-	pid_table[1] = kproc;
+	GLOBAL_TABLE->pid_table[1] = kproc;
 
 	if (kproc == NULL) {
 		panic("proc_create for kproc failed\n");
@@ -292,9 +308,7 @@ proc_create_runprogram(const char *name)
 
 	in_file = kmalloc(sizeof(*in_file));
 	out_file = kmalloc(sizeof(*out_file));
-	err_file = kmalloc(sizeof(*err_file));	
-
-	pid_lock = lock_create("pid_table_lock");
+	err_file = kmalloc(sizeof(*err_file));		
 
 	in_file->ft_lock = lock_create("in_lock");
 	out_file->ft_lock = lock_create("out_lock");	
@@ -344,12 +358,13 @@ proc_create_runprogram(const char *name)
 	newproc->p_filetable[2] = err_file;
 
 	newproc->pid = 2;
+	// newproc->index = 2;
 	newproc->parent_pid = 1;
 
 	newproc->exitcode = -1;
 	newproc->running = true;
 
-	pid_table[2] = newproc;
+	GLOBAL_TABLE->pid_table[2] = newproc;
 
 	return newproc;
 }

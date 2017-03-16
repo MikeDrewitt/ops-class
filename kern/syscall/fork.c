@@ -69,7 +69,7 @@ sys_fork(int32_t *retval) {
 	int bomb;
 	int open_space = 0;
 	for (bomb = 0; bomb < PID_TOP; bomb++) {
-		if (pid_table[bomb] == NULL) {
+		if (GLOBAL_TABLE->pid_table[bomb] == NULL) {
 			// there's an open space
 			open_space = 1;
 		}
@@ -140,37 +140,49 @@ sys_fork(int32_t *retval) {
 	// kprintf("parent: %p\n", curproc->p_filetable);
 
 
-	int new_pid = 1;
-	while (pid_table[new_pid] != NULL && new_pid < PID_TOP) {
-		new_pid++; // probably will introduce bug if > PID_TOP processes. 
+	int new_index = 1;
+	while (GLOBAL_TABLE->pid_table[new_index] != NULL && new_index < PID_TOP) {
+		new_index++; // probably will introduce bug if > PID_TOP processes. 
 	}
 
-	if (pid_table[new_pid] == NULL) {	
-		child_proc->pid = new_pid;
+	lock_acquire(GLOBAL_TABLE->pid_lock);
+
+	if (GLOBAL_TABLE->pid_table[new_index] == NULL) {
+		
+		// kprintf("index: %d\n", new_index);
+		
+		child_proc->pid = GLOBAL_TABLE->global_pid;
 		child_proc->parent_pid = curproc->pid;
 		child_proc->exitcode = -1;
 		child_proc->running = true;
 
-		// kprintf("\n");
+		GLOBAL_TABLE->global_pid += 1;
+		
+		// kprintf("global_pid: %d\n", global_pid);
+
 		kill = vfs_getcurdir(&child_proc->p_cwd);
 		if (kill) {
 			//kprintf("vfs_getcwd failed (%s)\n", strerror(kill));
 			*retval = kill;
 			
+			lock_release(GLOBAL_TABLE->pid_lock);
 			return -1;
 		}
 
 
-		pid_table[new_pid] = child_proc;
+		GLOBAL_TABLE->pid_table[new_index] = child_proc;
 	}
 	else {
 		// panic("You tried to overwrite another proccess.\n");
 		// kprintf("No Room!\n");
 		*retval = ENPROC;
 		
+		lock_release(GLOBAL_TABLE->pid_lock);
 		return -1;
 	}
 	
+	lock_release(GLOBAL_TABLE->pid_lock);
+
 	kill = thread_fork("child_thread", child_proc, (void *)fork_entry, child_tf, (unsigned long)child_addr);
 	if (kill) {
 		kfree(child_tf);
