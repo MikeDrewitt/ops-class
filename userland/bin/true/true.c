@@ -40,10 +40,10 @@ int
 main(void)
 {
 
-	int res = lseek(-1, 0, 2);
+//	int res = lseek(-1, 0, 2);
 
-	printf("res: %d\n", res);
+//	printf("res: %d\n", res);
 		
-
+	exit(0);
 	return 1;
 }

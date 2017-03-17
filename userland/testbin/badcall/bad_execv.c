@@ -182,7 +182,7 @@ test_execv(void)
 	handle_result(result, &lost_points);
 
 	ntests++;
-	result = exec_badprog(INVAL_PTR, "2exec with invalid pointer program");//fail
+	result = exec_badprog(INVAL_PTR, "2exec with invalid pointer program");//pass
 	handle_result(result, &lost_points);
 
 	ntests++;
@@ -190,7 +190,7 @@ test_execv(void)
 	handle_result(result, &lost_points);
 
 	ntests++;
-	result = exec_emptyprog();//fail
+	result = exec_emptyprog();//pass
 	handle_result(result, &lost_points);
 
 	ntests++;
@@ -198,11 +198,11 @@ test_execv(void)
 	handle_result(result, &lost_points);
 
 	ntests++;
-	result = exec_badargs(INVAL_PTR, "5exec with invalid pointer arglist");//fail
+	result = exec_badargs(INVAL_PTR, "5exec with invalid pointer arglist");//pass
 	handle_result(result, &lost_points);
 
 	ntests++;
-	result = exec_badargs(KERN_PTR, "6exec with kernel pointer arglist");//fail
+	result = exec_badargs(KERN_PTR, "6exec with kernel pointer arglist");//pass
 	handle_result(result, &lost_points);
 
 
@@ -211,7 +211,7 @@ test_execv(void)
 	handle_result(result, &lost_points);
 
 	ntests++;
-	result = exec_onearg(KERN_PTR, "8exec with kernel pointer arg");//TLB miss.... hard fail
+	result = exec_onearg(KERN_PTR, "8exec with kernel pointer arg");//pass
 	handle_result(result, &lost_points);
 
 	if(!lost_points)
