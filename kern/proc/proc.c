@@ -202,16 +202,23 @@ proc_destroy(struct proc *proc)
 	for (i = 3; i < FILE_TOP; i++) {
 		if (proc->p_filetable[i] != NULL) {
 			proc->p_filetable[i]->ref_counter -= 1;
-			
-			if (proc->p_filetable[i]->ref_counter == 0) {
-				lock_destroy(proc->p_filetable[i]->ft_lock);
+		/*	
+			if (proc->p_filetable[i]->ref_counter == 1) {
+				// lock_destroy(proc->p_filetable[i]->ft_lock);
 
-				proc->p_filetable[i]->flag = 0;
-				proc->p_filetable[i]->offset = 0;
+				int retval;
+				int err = sys_close(&retval, i);
+				if (err) {
+					panic("something happened while closing your file ...\n");
+				}
+
+				// proc->p_filetable[i]->flag = 0;
+				// proc->p_filetable[i]->offset = 0;
 
 				// kfree(proc->p_filetable[i]);
-				proc->p_filetable[i] = NULL;
+				// proc->p_filetable[i] = NULL;
 			}
+		*/
 		}
 	}
 

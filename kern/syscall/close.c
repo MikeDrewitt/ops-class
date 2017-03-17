@@ -26,6 +26,7 @@
 int
 sys_close(int32_t *retval, int fd)
 {
+	
 
 	if (fd < 0 || fd > FILE_TOP) {
 		*retval = EBADF;
@@ -36,6 +37,9 @@ sys_close(int32_t *retval, int fd)
 		*retval = EBADF;
 		return -1;
 	}
+	
+	// KASSERT(curproc->p_filetable[fd]->ref_counter > 0);
+
 //	kprintf("grabbing fd %d lock in close \n",fd);
 	lock_acquire(curproc->p_filetable[fd]->ft_lock);
 //	kprintf("close before ref counter = %d    fd: %d     \n", curproc->p_filetable[fd]->ref_counter, fd);
