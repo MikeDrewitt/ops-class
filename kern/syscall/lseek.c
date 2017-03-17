@@ -31,7 +31,7 @@ sys_lseek(int64_t *retval, int fd, off_t pos, int whence)
 	}
 
 	struct stat statbuf;
-
+//	kprintf("file %d has acquired a lock in lseek \n",fd);
 	lock_acquire(curproc->p_filetable[fd]->ft_lock);
 
 	VOP_STAT(curproc->p_filetable[fd]->ft_vnode, &statbuf);
@@ -42,6 +42,7 @@ sys_lseek(int64_t *retval, int fd, off_t pos, int whence)
 			*retval = EINVAL;
 
 			lock_release(curproc->p_filetable[fd]->ft_lock);
+//			kprintf("file %d has released a lock in lseek \n",fd);
 			return -1;
 
 		}
@@ -50,6 +51,7 @@ sys_lseek(int64_t *retval, int fd, off_t pos, int whence)
 		*retval = curthread->t_proc->p_filetable[fd]->offset;
 		
 		lock_release(curproc->p_filetable[fd]->ft_lock);
+//			kprintf("file %d has released a lock in lseek \n",fd);
 		return 0;
 	}
 	else if (whence == SEEK_CUR) {
@@ -62,6 +64,7 @@ sys_lseek(int64_t *retval, int fd, off_t pos, int whence)
 			*retval = EINVAL;
 
 			lock_release(curproc->p_filetable[fd]->ft_lock);
+//			kprintf("file %d has released a lock in lseek \n",fd);
 			return -1;			
 		}
 
@@ -69,6 +72,7 @@ sys_lseek(int64_t *retval, int fd, off_t pos, int whence)
 		*retval = curproc->p_filetable[fd]->offset;
 		
 		lock_release(curproc->p_filetable[fd]->ft_lock);
+//			kprintf("file %d has released a lock in lseek \n",fd);
 		return 0;
 	}
 	else if (whence == SEEK_END) {
@@ -79,6 +83,7 @@ sys_lseek(int64_t *retval, int fd, off_t pos, int whence)
 			*retval = EINVAL;
 
 			lock_release(curproc->p_filetable[fd]->ft_lock);
+//			kprintf("file %d has released a lock in lseek \n",fd);
 			return -1;			
 		}
 
@@ -86,12 +91,14 @@ sys_lseek(int64_t *retval, int fd, off_t pos, int whence)
 		*retval = curproc->p_filetable[fd]->offset;
 		
 		lock_release(curproc->p_filetable[fd]->ft_lock);
+//			kprintf("file %d has released a lock in lseek \n",fd);
 		return 0; 
 
 	}
 	
 	*retval = EINVAL;
 	lock_release(curproc->p_filetable[fd]->ft_lock);
+//			kprintf("file %d has released a lock in lseek \n",fd);
 
 	return -1;
 }

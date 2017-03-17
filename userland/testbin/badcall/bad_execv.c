@@ -178,40 +178,40 @@ test_execv(void)
 {
 	int ntests = 0, result = 0, lost_points = 0;
 	ntests++;
-	result = exec_badprog(NULL, "exec with NULL program");
+	result = exec_badprog(NULL, "1exec with NULL program");//pass
 	handle_result(result, &lost_points);
 
 	ntests++;
-	result = exec_badprog(INVAL_PTR, "exec with invalid pointer program");
+	result = exec_badprog(INVAL_PTR, "2exec with invalid pointer program");//pass
 	handle_result(result, &lost_points);
 
 	ntests++;
-	result = exec_badprog(KERN_PTR, "exec with kernel pointer program");
+	result = exec_badprog(KERN_PTR, "3exec with kernel pointer program");//pass
 	handle_result(result, &lost_points);
 
 	ntests++;
-	result = exec_emptyprog();
+	result = exec_emptyprog();//pass
 	handle_result(result, &lost_points);
 
 	ntests++;
-	result = exec_badargs(NULL, "exec with NULL arglist");
+	result = exec_badargs(NULL, "4exec with NULL arglist");//pass
 	handle_result(result, &lost_points);
 
 	ntests++;
-	result = exec_badargs(INVAL_PTR, "exec with invalid pointer arglist");
+	result = exec_badargs(INVAL_PTR, "5exec with invalid pointer arglist");//pass
 	handle_result(result, &lost_points);
 
 	ntests++;
-	result = exec_badargs(KERN_PTR, "exec with kernel pointer arglist");
+	result = exec_badargs(KERN_PTR, "6exec with kernel pointer arglist");//pass
 	handle_result(result, &lost_points);
 
 
 	ntests++;
-	result = exec_onearg(INVAL_PTR, "exec with invalid pointer arg");
+	result = exec_onearg(INVAL_PTR, "7exec with invalid pointer arg");//pass
 	handle_result(result, &lost_points);
 
 	ntests++;
-	result = exec_onearg(KERN_PTR, "exec with kernel pointer arg");
+	result = exec_onearg(KERN_PTR, "8exec with kernel pointer arg");//pass
 	handle_result(result, &lost_points);
 
 	if(!lost_points)

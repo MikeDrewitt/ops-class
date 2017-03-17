@@ -307,11 +307,14 @@ report_checkN(int rv, int error, int *right_errors, int right_num)
 	else {
 		goterror = 0;
 	}
-
+//	printf("1errno = %d\n",errno);
 	for (i=0; i<right_num; i++) {
 		if (goterror == right_errors[i]) {
 			report_result(rv, error);
+			
 			report_passed(&result);
+			
+//			printf("2errno = %d\n",errno);
 			return result;
 		}
 	}
@@ -322,8 +325,11 @@ report_checkN(int rv, int error, int *right_errors, int right_num)
 		report_skipped(&result);
 	}
 	else {
+
+//		printf("5errno = %d\n",errno);
 		report_result(rv, error);
 		report_failure(&result);
+//		printf("4errno = %d\n",errno);
 	}
 	return result;
 }

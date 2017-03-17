@@ -340,9 +340,11 @@ wait_siblings(void)
 		return result;
 	}
 	if (pids[0]==0) {
+	//	printf("first child created and is waiting on semname?\n");
+	//	printf("first childd  is trying to close file fd = %d\n",fd);
 		close(fd);
 		close(semfd);
-		wait_siblings_child(semname);
+		wait_siblings_child(semname);//figure out what this does
 		_exit(0);
 	}
 
@@ -357,6 +359,8 @@ wait_siblings(void)
 		return result;
 	}
 	if (pids[1]==0) {
+//		printf("second child is created and is also waiting on semname?\n");
+//		printf("second child is trying to close file fd = %d\n",fd);
 		close(fd);
 		close(semfd);
 		wait_siblings_child(semname);
@@ -377,6 +381,7 @@ wait_siblings(void)
 		report_warnx("write error on %s: short count", TESTFILE);
 		report_aborted(&result);
 		/* abandon child procs :( */
+//		printf("parent is trying to close file fd = %d\n",fd);
 		close(fd);
 		close(semfd);
 		remove(semname);
@@ -408,6 +413,7 @@ wait_siblings(void)
 	else {
 		report_passed(&result);
 	}
+//	printf("parent is trying to close file fd = %d\n",fd);
 	close(fd);
 	close(semfd);
 	remove(semname);

@@ -74,7 +74,7 @@ kill_curthread(vaddr_t epc, unsigned code, vaddr_t vaddr)
 {
 	int sig = 0;
 
-
+	int32_t retval;
 	KASSERT(code < NTRAPCODES);
 	switch (code) {
 	    case EX_IRQ:
@@ -111,7 +111,7 @@ kill_curthread(vaddr_t epc, unsigned code, vaddr_t vaddr)
 	/*
 	 * You will probably want to change this.
 	 */
-
+	sys__exit(&retval, code);
 	kprintf("Fatal user mode trap %u sig %d (%s, epc 0x%x, vaddr 0x%x)\n",
 		code, sig, trapcodenames[code], epc, vaddr);
 	panic("I don't know how to handle this\n");

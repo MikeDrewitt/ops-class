@@ -122,13 +122,21 @@ sys_fork(int32_t *retval) {
 	int i = 0;
 	while (i < PID_TOP) {
 		if (curproc->p_filetable[i] != NULL) {
-
+			lock_acquire(curproc->p_filetable[i]->ft_lock);
 			curproc->p_filetable[i]->ref_counter += 1;
+			child_proc->p_filetable[i] = curproc->p_filetable[i];
+			lock_release(curproc->p_filetable[i]->ft_lock);
 			// kprintf("fork ref count: %d    fd: %d    \n", curproc->p_filetable[i]->ref_counter, i);
+		}
+		else{
+
+			child_proc->p_filetable[i] = curproc->p_filetable[i];
+
+
+
 		}
 		
 		// kprintf("iter: %d\n", i);
-		child_proc->p_filetable[i] = curproc->p_filetable[i];
 
 		// kprintf("child: %p\n", child_proc->p_filetable[i]);
 		// kprintf("parent: %p\n", curproc->p_filetable[i]);
@@ -139,6 +147,8 @@ sys_fork(int32_t *retval) {
 	// kprintf("child: %p\n", child_proc->p_filetable);
 	// kprintf("parent: %p\n", curproc->p_filetable);
 
+
+	lock_acquire(pid_lock);
 
 	int new_pid = 1;
 	while (pid_table[new_pid] != NULL && new_pid < PID_TOP) {
@@ -156,7 +166,8 @@ sys_fork(int32_t *retval) {
 		if (kill) {
 			//kprintf("vfs_getcwd failed (%s)\n", strerror(kill));
 			*retval = kill;
-			
+		
+			lock_release(pid_lock);
 			return -1;
 		}
 
@@ -168,9 +179,12 @@ sys_fork(int32_t *retval) {
 		// kprintf("No Room!\n");
 		*retval = ENPROC;
 		
+		lock_release(pid_lock);
 		return -1;
 	}
 	
+	lock_release(pid_lock);
+
 	kill = thread_fork("child_thread", child_proc, (void *)fork_entry, child_tf, (unsigned long)child_addr);
 	if (kill) {
 		kfree(child_tf);

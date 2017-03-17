@@ -98,17 +98,23 @@ dup2_self(void)
 
 	report_begin("fstat fd after dup2 to itself");
 	rv = fstat(testfd, &sb);
+//	printf("errno is = %d  and should be = %d\n", errno, ENOSYS);
 	if (errno == ENOSYS) {
+//		printf("correct errno\n");
 		report_saw_enosys();
+//		printf("what is errno now? %d\n", errno);
 	}
 	report_result(rv, errno);
+//	printf("what is rv here %d\n",rv);
 	if (rv==0) {
 		report_passed(&failure);
 	}
 	else if (errno != ENOSYS) {
+//		printf("am i failing here? errno is %d\n",errno);
 		report_failure(&failure);
 	}
 	else {
+//		printf("am i getting here?\n");
 		report_skipped(&failure);
 		/* no support for fstat; try lseek */
 		report_begin("lseek fd after dup2 to itself");

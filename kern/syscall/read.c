@@ -58,9 +58,9 @@ sys_read(int32_t *retval, int fd, void *buf, size_t buflen)
 
 	struct iovec iov;
 	struct uio u;
-
+//	kprintf("\nbefore read lock for file %d\n", fd);
 	lock_acquire(curproc->p_filetable[fd]->ft_lock);
-
+//	kprintf("please dont print out\n");
 	iov.iov_ubase = (userptr_t)const_buf;
 	iov.iov_len = buflen;
 	u.uio_iov = &iov;
@@ -70,12 +70,13 @@ sys_read(int32_t *retval, int fd, void *buf, size_t buflen)
 	u.uio_segflg = UIO_USERSPACE;
 	u.uio_rw = UIO_READ;
 	u.uio_space = curproc->p_addrspace;//doesnt seem right
-
+//	kprintf("before vop read \n");
 	result = VOP_READ(curproc->p_filetable[fd]->ft_vnode, &u);
-
+//	kprintf("after vop read \n");
 	if(result){
 		lock_release(curproc->p_filetable[fd]->ft_lock);
 
+//		kprintf("after read lock\n");
 		*retval = EIO;
 		return -1;
 	}
@@ -86,7 +87,7 @@ sys_read(int32_t *retval, int fd, void *buf, size_t buflen)
 	
 	//kprintf("buflen = %d\n",(int)buflen);	
 	lock_release(curproc->p_filetable[fd]->ft_lock);
-	
+//	kprintf("after read lock\n");
 	return 0;
 
 }

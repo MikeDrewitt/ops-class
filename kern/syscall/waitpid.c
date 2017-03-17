@@ -89,12 +89,12 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 		return -1;
 	}
 
-	if (options == WNOHANG) {
+/*	if (options == WNOHANG) {
 		if (pid_table[pid]->p_sem->sem_count == 0) {
 			return 0;
 		}
 	}
-
+*/
 	lock_acquire(curproc->p_full_lock);
 	
 	void *safe_status = NULL;
@@ -122,9 +122,9 @@ sys_waitpid(int32_t *retval, pid_t pid, int *status, int options) {
 	// Wait here until _exit() is called by pid
 	P(pid_table[pid]->p_sem);
 
-	if (safe_status != NULL) {
+//	if (safe_status != NULL) {
 		*status = pid_table[pid]->exitcode;
-	}
+//	}
 
 	proc_destroy(pid_table[pid]);
 	pid_table[pid] = NULL;

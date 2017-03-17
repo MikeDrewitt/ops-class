@@ -88,6 +88,7 @@ syscall(struct trapframe *tf)
 	int64_t retval_long;
 	int64_t  full_pos;
 	int seek = 0;
+	int bad_sys = 0;
 	
 	KASSERT(curthread != NULL);
 	KASSERT(curthread->t_curspl == 0);
@@ -179,7 +180,9 @@ syscall(struct trapframe *tf)
 
 	    default:
 		kprintf("Unknown syscall %d\n", callno);
-		err = ENOSYS;
+		err = -1;
+		bad_sys = 1;
+		retval = ENOSYS;
 		break;
 	}
 
@@ -191,11 +194,17 @@ syscall(struct trapframe *tf)
 		 * code in errno.
 		 */
 	
-		if (seek) retval = retval_long;
+		if (seek){ retval = retval_long;}
+		if(bad_sys){
+			tf->tf_v0 = retval;
+			tf->tf_a3 = -1;
 
+		}
+		else{
 
-		tf->tf_v0 = retval;
-		tf->tf_a3 = 1;      /* signal an error */
+			tf->tf_v0 = retval;
+			tf->tf_a3 = -1;     /* signal an error */
+		}
 	}
 	else {
 		/* Success. */
@@ -205,6 +214,7 @@ syscall(struct trapframe *tf)
 			// tf->tf_v0 = (retval & 0xFFFFFFFF00000000) >> 32; // and this grabs top 32
 			tf->tf_v1 = retval_long;
 			tf->tf_v0 = retval_long >> 32;
+			seek = 0;
 		}
 		else {
 			tf->tf_v0 = retval;
