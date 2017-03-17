@@ -179,9 +179,12 @@ sys_fork(int32_t *retval) {
 		// kprintf("No Room!\n");
 		*retval = ENPROC;
 		
+		lock_release(pid_lock);
 		return -1;
 	}
 	
+	lock_release(pid_lock);
+
 	kill = thread_fork("child_thread", child_proc, (void *)fork_entry, child_tf, (unsigned long)child_addr);
 	if (kill) {
 		kfree(child_tf);
