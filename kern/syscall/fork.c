@@ -148,6 +148,8 @@ sys_fork(int32_t *retval) {
 	// kprintf("parent: %p\n", curproc->p_filetable);
 
 
+	lock_acquire(pid_lock);
+
 	int new_pid = 1;
 	while (pid_table[new_pid] != NULL && new_pid < PID_TOP) {
 		new_pid++; // probably will introduce bug if > PID_TOP processes. 
@@ -164,7 +166,8 @@ sys_fork(int32_t *retval) {
 		if (kill) {
 			//kprintf("vfs_getcwd failed (%s)\n", strerror(kill));
 			*retval = kill;
-			
+		
+			lock_release(pid_lock);
 			return -1;
 		}
 
