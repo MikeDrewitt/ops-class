@@ -17,7 +17,7 @@ int
 sys_execv(int32_t *retval, const char *program, char **args)
 {
 
-
+//	int32_t exit;
 	//(void)retval;
 
 	int err;
@@ -71,28 +71,46 @@ sys_execv(int32_t *retval, const char *program, char **args)
 	int cur_arg = 0;
 
 	if (program == NULL) {
+	//	curproc->exitcode = 107;
 		*retval = EFAULT;
+	//	curproc->running = false;
 		return -1;
 	}
 
 	if (args == NULL) {
+	//	curproc->exitcode = 107;
 		*retval = EFAULT;
+	//	curproc->running = false;
 		return -1;
 	}
 
-/*	err = copyin((const_userptr_t)*args,(void *)pointer_char, 1);
-	if (err) {
-		*retval = EFAULT;
-		return -1;
-	}
-*/
 	
-	char kernel_progname[128];
-	err = copyinstr((const_userptr_t)program, kernel_progname, 128, 0);
+	char mike[128];
+	err = copyinstr((const_userptr_t)program, mike, 128, 0);
 	if (err) {
+	//	curproc->exitcode = 107;
 		*retval = EFAULT;
+	//	curproc->running = false;
 		return -1;
 	}
+	/*test 4*/
+	if(mike[0]=='\0'){
+	//	curproc->exitcode = 107;
+		*retval = EINVAL;
+	//	curproc->running = false;
+		return -1;
+
+	}
+	/*a bunch of tests */
+	err = copyin((const_userptr_t)args,(void *)mike, 4);
+	if(err){
+	//	curproc->exitcode = 107;
+		*retval = EFAULT;
+	//	curproc->running = false;
+		//	sys__exit(&exit, 107);
+		return -1;
+	}
+
 
 	//LETS JENK THE SHIT OUT OF THIS
 
@@ -153,7 +171,17 @@ sys_execv(int32_t *retval, const char *program, char **args)
 
 
 	/* loops through each argument one by one */
-	while (cur_arg != num_args) { 
+	while (cur_arg != num_args) {
+	/*a bunch of tests */
+		err = copyin((const_userptr_t)*args,(void *)mike, 4);
+		if(err){
+	//		curproc->exitcode = 107;
+			*retval = EFAULT;
+	//		curproc->running = false;
+		//	sys__exit(retval, 107);
+			return -1;
+		}
+
 
 		int arg_len = 0;	
 		is_first = 1;
@@ -332,7 +360,7 @@ sys_execv(int32_t *retval, const char *program, char **args)
 	int result;
 
 	/* Open the file. */
-	// char kernel_progname[128];
+	char kernel_progname[128];
 	copyinstr((const_userptr_t)program, kernel_progname, 128, 0);
 	
 	result = vfs_open(kernel_progname, O_RDONLY, 0, &v);
@@ -343,10 +371,12 @@ sys_execv(int32_t *retval, const char *program, char **args)
 
 	/* We should be a new process. */
 //	KASSERT(proc_getas() == NULL); //we commented this out......
-
+//	struct addrspace *old_addr = curproc->p_addr; 
 	/* Create a new address space. */
 	as = as_create();
 	if (as == NULL) {
+//		ad_destroy(as);
+//		curproc->p_addr = old_addr;
 		vfs_close(v);
 		return ENOMEM;
 	}
