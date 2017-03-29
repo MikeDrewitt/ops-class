@@ -57,7 +57,7 @@
  * The first 512 megs of physical space can be addressed in both kseg0 and
  * kseg1. We use kseg0 for the kernel. This macro returns the kernel virtual
  * address of a given physical address within that range. (We assume we're
- * not using systems with more physical space than that anyway.)
+
  *
  * N.B. If you, say, call a function that returns a paddr or 0 on error,
  * check the paddr for being 0 *before* you use this macro. While paddr 0
